@@ -315,6 +315,23 @@ export default function CheckWriter({
     [account, checkNumber, amountCents, dateIssued, payeeName, layout, features, signatureMode, includeAmountField, accountId, existingSerials],
   );
 
+  // Keep the preview page inside its column by default (kills horizontal
+  // overflow); the operator can still zoom manually.
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const docW = account ? getLayout(layout).page.width : 8.5;
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el || !autoFit) return;
+    const update = () => {
+      const target = (el.clientWidth - 32) / (docW * 96);
+      setZoom(Math.min(1.2, Math.max(0.3, Number(target.toFixed(2)))));
+    };
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [autoFit, docW]);
+
   async function upload(
     file: File | undefined,
     field: "logoDataUrl" | "signatureDataUrl" | "companyLogoDataUrl",
@@ -427,24 +444,7 @@ export default function CheckWriter({
     );
   }
 
-  const docW = layoutSpec.page.width;
   const docH = layoutSpec.page.height;
-
-  // Keep the preview page inside its column by default (kills horizontal
-  // overflow); the operator can still zoom manually.
-  const previewRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    const el = previewRef.current;
-    if (!el || !autoFit) return;
-    const update = () => {
-      const target = (el.clientWidth - 32) / (docW * 96);
-      setZoom(Math.min(1.2, Math.max(0.3, Number(target.toFixed(2)))));
-    };
-    update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [autoFit, docW]);
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
