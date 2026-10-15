@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "echeckpay",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+
+  // ── Database (production) ────────────────────────────────────────────────
+  // The edge cannot reach a localhost Postgres. Create a hosted Postgres
+  // (e.g. Neon / Supabase), then register it with Hyperdrive:
+  //
+  //   npx wrangler hyperdrive create echeckpay-db \
+  //     --connection-string="postgres://user:pass@host/db?sslmode=require"
+  //
+  // ...and uncomment the block below, replacing <HYPERDRIVE_ID>:
+  //
+  // "hyperdrive": [
+  //   {
+  //     "binding": "HYPERDRIVE",
+  //     "id": "<HYPERDRIVE_ID>"
+  //   }
+  // ]
+}

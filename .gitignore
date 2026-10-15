@@ -7,6 +7,11 @@ out/
 tsconfig.tsbuildinfo
 next-env.d.ts
 
+# cloudflare
+.open-next/
+.wrangler/
+worker-*.lock
+
 # secrets — never commit
 .env
 .env.*
