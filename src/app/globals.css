@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0b1220;
+}
+
+/*
+ * Bundled E-13B typeface — generated from the Payments Canada Standard 006
+ * stroke specification (SVG outlines © 2021 Zachary Schneider, SIL OFL 1.1),
+ * compiled to TrueType with a 0.75 em advance so at exactly 12 pt the
+ * character pitch is 1/8 inch — 8 characters per inch, as the ANSI X9.6
+ * position grid requires. No letter-spacing, ever. Swap in your own
+ * accredited face from the account screen if your bank specifies one.
+ */
+@font-face {
+  font-family: "MICR E13B";
+  src: url("/fonts/micr-e13b.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  background: #fff;
+}
+
+/* --------------------------------------------------------------- */
+/* Print engine: letter stock, zero margins, exact colour          */
+/* --------------------------------------------------------------- */
+@page {
+  size: letter portrait;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-root {
+    position: absolute !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  .print-page {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .check-sheet {
+    box-shadow: none !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+/* Screen-only chrome around documents */
+.doc-shadow {
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 18px 40px -18px rgba(15, 23, 42, 0.35);
+}
+
+.check-scale {
+  transform-origin: top left;
+}
+
+input[type="range"] {
+  accent-color: #0f766e;
+}
