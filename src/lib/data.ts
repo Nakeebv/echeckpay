@@ -6,6 +6,30 @@ import { BASELINE_FEATURES } from "@/lib/security";
 let seeded = false;
 let seedPromise: Promise<void> | null = null;
 
+/** Retry connection-level failures (serverless pools drop idle sockets). */
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      const cause = (error as { cause?: unknown })?.cause as Error | undefined;
+      const msg = String(cause?.message ?? (error as Error)?.message ?? error);
+      lastError = error;
+      if (
+        !/connection terminated|Connection terminated|ECONNRESET|ECONNREFUSED|EPIPE|write after end|socket hang up|headache timeout|CONNECT_TIMEOUT|timeout expired/i.test(
+          msg,
+        )
+      ) {
+        throw error;
+      }
+      // each retry builds a fresh connection
+      await new Promise((r) => setTimeout(r, attempt === 0 ? 300 : 900));
+    }
+  }
+  throw lastError;
+}
+
 /**
  * Idempotent demo seed so a fresh database is immediately usable. Guarded by a
  * shared in-process promise *and* a Postgres advisory lock, because server
@@ -23,14 +47,20 @@ export async function ensureSeeded(): Promise<void> {
 }
 
 async function runSeed(): Promise<void> {
-  await db.transaction(async (tx) => {
-    await tx.execute(sql`select pg_advisory_xact_lock(778811223)`);
+  await withRetry(() => db.transaction(async (tx) => {
+    // Non-blocking: if another isolate is seeding, skip rather than block —
+    // a blocking advisory lock stalls every page until the lock resolves.
+    const lock = await tx.execute(sql`select pg_try_advisory_xact_lock(778811223) as ok`);
+    const rows = (lock as unknown as { rows?: { ok?: boolean }[] }).rows ?? [];
+    if (rows[0]?.ok !== true) {
+      return;
+    }
     const existing = await tx.select({ n: sql<number>`count(*)::int` }).from(bankAccounts);
     if ((existing[0]?.n ?? 0) > 0) {
       return;
     }
     await seedAll(tx);
-  });
+  }));
   seeded = true;
 }
 
@@ -217,12 +247,12 @@ export function toAccountView<T extends {
 
 export async function listAccounts() {
   await ensureSeeded();
-  return db.select().from(bankAccounts).orderBy(bankAccounts.id);
+  return withRetry(() => db.select().from(bankAccounts).orderBy(bankAccounts.id));
 }
 
 export async function listPayees() {
   await ensureSeeded();
-  return db.select().from(payees).orderBy(payees.name);
+  return withRetry(() => db.select().from(payees).orderBy(payees.name));
 }
 
 export type RegisterRow = {
@@ -243,7 +273,7 @@ export type RegisterRow = {
 
 export async function listChecks(limit = 200, offset = 0): Promise<RegisterRow[]> {
   await ensureSeeded();
-  const rows = await db
+  const rows = await withRetry(() => db
     .select({
       id: checks.id,
       checkNumber: checks.checkNumber,
@@ -263,39 +293,45 @@ export async function listChecks(limit = 200, offset = 0): Promise<RegisterRow[]
     .innerJoin(bankAccounts, eq(checks.accountId, bankAccounts.id))
     .orderBy(desc(checks.checkNumber), desc(checks.id))
     .limit(limit)
-    .offset(offset);
+    .offset(offset));
   return rows;
 }
 
 export async function countChecks(): Promise<number> {
   await ensureSeeded();
-  const [row] = await db.select({ n: sql<number>`count(*)::int` }).from(checks);
+  const [row] = await withRetry(() => db.select({ n: sql<number>`count(*)::int` }).from(checks));
   return row?.n ?? 0;
 }
 
 export async function listAuditsForCheck(id: number) {
-  return db
-    .select()
-    .from(auditEvents)
-    .where(eq(auditEvents.checkId, id))
-    .orderBy(desc(auditEvents.id));
+  return withRetry(() =>
+    db
+      .select()
+      .from(auditEvents)
+      .where(eq(auditEvents.checkId, id))
+      .orderBy(desc(auditEvents.id)),
+  );
 }
 
 /** Global audit feed (incl. account/payee/positive-pay events with no check). */
 export async function listRecentAudits(limit = 12) {
   await ensureSeeded();
-  return db.select().from(auditEvents).orderBy(desc(auditEvents.id)).limit(limit);
+  return withRetry(() =>
+    db.select().from(auditEvents).orderBy(desc(auditEvents.id)).limit(limit),
+  );
 }
 
 export async function getCheckDetail(id: number) {
   await ensureSeeded();
-  const rows = await db
-    .select({ check: checks, account: bankAccounts, payee: payees })
-    .from(checks)
-    .innerJoin(bankAccounts, eq(checks.accountId, bankAccounts.id))
-    .leftJoin(payees, eq(checks.payeeId, payees.id))
-    .where(eq(checks.id, id))
-    .limit(1);
+  const rows = await withRetry(() =>
+    db
+      .select({ check: checks, account: bankAccounts, payee: payees })
+      .from(checks)
+      .innerJoin(bankAccounts, eq(checks.accountId, bankAccounts.id))
+      .leftJoin(payees, eq(checks.payeeId, payees.id))
+      .where(eq(checks.id, id))
+      .limit(1),
+  );
   if (!rows.length) return null;
   const audit = await listAuditsForCheck(id);
   return { ...rows[0], audit };
@@ -423,16 +459,22 @@ export async function createCheck(input: CreateCheckInput): Promise<CreateCheckR
 
 export async function getStats() {
   await ensureSeeded();
-  const [accountCount] = await db.select({ n: sql<number>`count(*)::int` }).from(bankAccounts);
-  const [payeeCount] = await db.select({ n: sql<number>`count(*)::int` }).from(payees);
-  const [totals] = await db
+  const [accountCount] = await withRetry(() =>
+    db.select({ n: sql<number>`count(*)::int` }).from(bankAccounts),
+  );
+  const [payeeCount] = await withRetry(() =>
+    db.select({ n: sql<number>`count(*)::int` }).from(payees),
+  );
+  const [totals] = await withRetry(() =>
+    db
     .select({
       n: sql<number>`count(*)::int`,
       outstanding: sql<number>`coalesce(sum(case when status in ('draft','printed','issued') then amount_cents else 0 end), 0)::int`,
       cleared: sql<number>`coalesce(sum(case when status = 'cleared' then amount_cents else 0 end), 0)::int`,
       voided: sql<number>`count(*) filter (where status in ('void','stopped'))::int`,
     })
-    .from(checks);
+    .from(checks),
+  );
   return {
     accounts: accountCount?.n ?? 0,
     payees: payeeCount?.n ?? 0,

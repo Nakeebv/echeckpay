@@ -42,27 +42,33 @@ npx wrangler secret put AUTH_SECRET   # long random string
 ### Database (production)
 
 The edge cannot reach a localhost Postgres. Point the Worker at a hosted
-Postgres (Neon / Supabase / RDS) via Hyperdrive:
+Postgres (Neon / Supabase / RDS) via the `DATABASE_URL` secret:
 
-1. Create the database and note the connection string (`?sslmode=require`).
-2. Register it with Hyperdrive:
+```sh
+npx wrangler secret put DATABASE_URL
+# e.g. Supabase session pooler:
+# postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres
+```
 
-   ```sh
-   npx wrangler hyperdrive create echeckpay-db \
-     --connection-string="postgres://user:pass@host/db?sslmode=require"
-   ```
+Run the schema against the hosted DB (Drizzle Kit):
 
-3. Uncomment the `hyperdrive` block in `wrangler.jsonc` using the returned ID.
-4. Run the schema against the hosted DB (Drizzle Kit):
+```sh
+npx drizzle-kit push
+```
 
-   ```sh
-   npx drizzle-kit push
-   ```
+Then `npm run deploy` again.
 
-5. `npm run deploy` again.
+> **Security note:** the current Worker→Postgres connection runs unencrypted
+> (`sslmode=disable`) because Workers' outbound TLS upgrade cannot complete
+> against poolers. To encrypt, create a **Hyperdrive** config in the Cloudflare
+> dashboard (Storage & Databases → Hyperdrive → uses the same connection
+> string, handles TLS itself), then uncomment the `hyperdrive` block in
+> `wrangler.jsonc` with the returned ID and redeploy. `src/db/index.ts` picks
+> the `HYPERDRIVE` binding up automatically.
 
-`src/db/index.ts` automatically uses the `HYPERDRIVE` binding when running on
-Workers and falls back to `DATABASE_URL` for local development.
+Because workerd recycles sockets between requests, `src/db` opens a
+short-lived connection per query chain and closes it when the chain settles —
+see `src/db/index.ts` for the details.
 
 ## Security notes
 

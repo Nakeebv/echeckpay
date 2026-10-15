@@ -22,3 +22,4 @@ drizzle.config.json
 .DS_Store
 *.pem
 npm-debug.log*
+.dev.vars
