@@ -154,7 +154,7 @@ export default function CheckWriter({
   const [withFraction, setWithFraction] = useState(seed.withFraction);
   const [withThermo, setWithThermo] = useState(seed.withThermo);
   const [side, setSide] = useState<"front" | "back">("front");
-  const [zoom, setZoom] = useState(0.95);
+  const [zoom, setZoom] = useState(0.6);
   const [autoFit, setAutoFit] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -1008,27 +1008,31 @@ export default function CheckWriter({
             </label>
           </div>
 
-          {/* preview canvas — auto-fits the column width so the whole check page
-              is visible; manual zoom overrides it */}
-          <div ref={previewRef} className="overflow-auto rounded-lg bg-black p-4">
+          {/* preview canvas — scaled to fit its column at any viewport width;
+              manual zoom overrides the auto-fit */}
+          <div ref={previewRef} className="w-full overflow-auto rounded-lg bg-black p-4">
             <div
-              className="check-scale doc-shadow mx-auto"
-              style={{
-                zoom,
-                width: `${docW * 96}px`,
-                height: `${docH * 96}px`,
-                background: "#fff",
-              }}
+              className="mx-auto"
+              style={{ width: `${docW * 96 * zoom}px`, height: `${docH * 96 * zoom}px` }}
             >
               <div
-                className="print-root"
+                className="check-scale doc-shadow"
                 style={{
-                  position: "relative",
-                  width: `${docW}in`,
-                  height: `${docH}in`,
+                  width: `${docW * 96}px`,
+                  height: `${docH * 96}px`,
+                  transform: `scale(${zoom})`,
                   background: "#fff",
                 }}
               >
+                <div
+                  className="print-root"
+                  style={{
+                    position: "relative",
+                    width: `${docW}in`,
+                    height: `${docH}in`,
+                    background: "#fff",
+                  }}
+                >
                 <div
                   style={{
                     position: "absolute",
@@ -1065,6 +1069,7 @@ export default function CheckWriter({
                     <div style={{ marginTop: 4 }}>Transit {compliance.micrText.slice(0, 11)}</div>
                   </div>
                 ) : null}
+                </div>
               </div>
             </div>
           </div>
