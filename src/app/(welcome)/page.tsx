@@ -191,27 +191,6 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      {/* Product strip */}
-      <section className="bg-white px-6 pb-20">
-        <div className="mx-auto grid max-w-5xl gap-6 text-center sm:grid-cols-3">
-          <div className="rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
-            <div className="text-2xl font-bold text-[#1d1d1f]">$10</div>
-            <p className="mt-1 text-sm text-[#6e6e73]">per printed check — reprints included, charged only on confirmed print</p>
-          </div>
-          <div className="rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
-            <div className="text-2xl font-bold text-[#1d1d1f]">$50</div>
-            <p className="mt-1 text-sm text-[#6e6e73]">minimum wallet deposit in crypto — funds land in your balance</p>
-          </div>
-          <div className="rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
-            <div className="text-2xl font-bold text-[#1d1d1f]">0</div>
-            <p className="mt-1 text-sm text-[#6e6e73]">data shared with third parties — accounts, payees and checks stay on your server</p>
-          </div>
-        </div>
-        <p className="mt-8 text-center text-sm text-[#6e6e73]">
-          A full wallet, history and compliance engine behind a two-minute learning curve.
-        </p>
-      </section>
-
       {/* How it works */}
       <section id="how" className="bg-[#f5f5f7] px-6 py-20">
         <div className="mx-auto max-w-5xl">
@@ -281,23 +260,6 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-[#f5f5f7] px-6 py-20 text-center">
-        <h2 className="text-3xl font-semibold tracking-tight text-[#1d1d1f] sm:text-4xl">
-          Ready when your bank is.
-        </h2>
-        <p className="mx-auto mt-3 max-w-md text-sm text-[#6e6e73]">
-          Create an account, fund the wallet from $50, and print your first bank-ready check for $10.
-        </p>
-        <div className="mt-8">
-          <Link
-            href="/register"
-            className="rounded-full bg-[#0071e3] px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-[#0077ed]"
-          >
-            Get started
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }
