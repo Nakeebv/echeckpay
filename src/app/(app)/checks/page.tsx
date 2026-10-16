@@ -41,7 +41,7 @@ export default async function ChecksPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">History</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">History</h1>
           <p className="mt-1 text-sm text-slate-600">
             Every check you have written. Open one to print it, or export the list for your bank.
           </p>

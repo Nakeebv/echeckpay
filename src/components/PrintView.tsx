@@ -53,9 +53,9 @@ export default function PrintView({
       className="select-none space-y-4"
       onContextMenu={(e) => e.preventDefault()}
     >
-      <div className="no-print flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="no-print flex flex-wrap items-center gap-3 card-surface p-4">
         <div className="mr-auto">
-          <div className="text-sm font-bold text-slate-900">
+          <div className="text-sm font-semibold text-slate-900">
             Print check #{check.checkNumber} — {layoutName}
           </div>
           <p className="mt-0.5 max-w-2xl text-xs leading-relaxed text-slate-600">

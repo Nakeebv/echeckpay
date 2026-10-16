@@ -87,7 +87,7 @@ export default async function WritePage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
           {editing ? `Edit check #${editing.checkNumber}` : "Write a check"}
         </h1>
         <p className="mt-1 max-w-3xl text-sm text-slate-600">

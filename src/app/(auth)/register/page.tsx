@@ -19,9 +19,9 @@ export default async function RegisterPage({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <div className="text-lg font-bold tracking-tight">eCheckPay</div>
-        <h1 className="mt-6 text-xl font-bold tracking-tight text-slate-900">Create your account</h1>
+      <div className="w-full max-w-sm card-surface p-8">
+        <div className="text-lg font-semibold tracking-tight">eCheckPay</div>
+        <h1 className="mt-6 text-xl font-semibold tracking-tight text-slate-900">Create your account</h1>
         <p className="mt-1 text-sm text-slate-600">
           Step 1 of 2 — confirm your email. Your email is only used for password recovery.
         </p>
@@ -42,19 +42,19 @@ export default async function RegisterPage({
               name="email"
               required
               autoComplete="email"
-              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20"
+              className="field-base"
             />
           </label>
           <button
             type="submit"
-            className="w-full rounded-full bg-[#0071e3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed]"
+            className="btn btn-primary w-full"
           >
             Continue
           </button>
         </form>
         <p className="mt-4 text-xs text-slate-500">
           Already registered?{" "}
-          <a href="/login" className="font-semibold text-[#0071e3] hover:underline">
+          <a href="/login" className="font-semibold text-[#2e51f0] hover:underline">
             Sign in
           </a>
         </p>

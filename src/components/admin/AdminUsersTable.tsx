@@ -71,12 +71,12 @@ export default function AdminUsersTable({ users }: { users: AdminUser[] }) {
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold tracking-tight text-[#1d1d1f]">Users</h2>
+        <h2 className="text-lg font-semibold tracking-tight text-[#16171c]">Users</h2>
         <input
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Search email…"
-          className="w-48 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm outline-none focus:border-[#0071e3]"
+          className="w-48 rounded-full border border-black/10 bg-white px-3 py-1.5 text-sm outline-none focus:border-[#2e51f0]"
         />
       </div>
 
@@ -90,7 +90,7 @@ export default function AdminUsersTable({ users }: { users: AdminUser[] }) {
         </div>
       ) : null}
 
-      <div className="table-stack overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="table-stack overflow-hidden card-surface">
         <table className="w-full min-w-[760px] text-sm table-collapse-sm">
           <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wider text-slate-500">
             <tr>
@@ -128,7 +128,7 @@ export default function AdminUsersTable({ users }: { users: AdminUser[] }) {
                 <td data-label="Balance" className="font-mono text-xs tabular-nums">{formatCents(u.balanceCents)}</td>
                 <td data-label="Checks" className="text-xs tabular-nums">{u.checkCount}</td>
                 <td data-label="Detail">
-                  <a href={`/admin/users/${u.id}`} className="text-[11px] font-semibold text-[#0071e3] hover:underline">
+                  <a href={`/admin/users/${u.id}`} className="text-[11px] font-semibold text-[#2e51f0] hover:underline">
                     Open
                   </a>
                 </td>

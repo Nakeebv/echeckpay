@@ -19,8 +19,8 @@ export default async function SetupPasswordPage({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Create your password</h1>
+      <div className="w-full max-w-sm card-surface p-8">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900">Create your password</h1>
         <p className="mt-1 text-sm text-slate-600">
           You&apos;ll use this password to sign in from now on.
         </p>
@@ -32,7 +32,7 @@ export default async function SetupPasswordPage({
           </div>
         ) : null}
 
-        <div className="mt-4 rounded-lg border border-slate-200 bg-[#f5f5f7] px-3 py-2 text-xs leading-relaxed text-slate-600">
+        <div className="mt-4 rounded-lg border border-slate-200 bg-[#f7f7f8] px-3 py-2 text-xs leading-relaxed text-slate-600">
           <strong>Strong password required:</strong> at least 10 characters with letters, numbers
           and a symbol (for example <span className="font-mono">Sunset!Ride42</span>).
         </div>
@@ -49,7 +49,7 @@ export default async function SetupPasswordPage({
               required
               minLength={10}
               autoComplete="new-password"
-              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20"
+              className="field-base"
             />
           </label>
           <label className="block">
@@ -62,10 +62,10 @@ export default async function SetupPasswordPage({
               required
               minLength={10}
               autoComplete="new-password"
-              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20"
+              className="field-base"
             />
           </label>
-          <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-[#f5f5f7] p-3 text-xs leading-relaxed text-slate-700">
+          <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-[#f7f7f8] p-3 text-xs leading-relaxed text-slate-700">
             <input type="checkbox" name="saved" required className="mt-0.5" />
             <span>
               I have <strong>saved this password</strong> in a safe place. Recovery is only
@@ -74,7 +74,7 @@ export default async function SetupPasswordPage({
           </label>
           <button
             type="submit"
-            className="w-full rounded-full bg-[#0071e3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed]"
+            className="btn btn-primary w-full"
           >
             Create password & continue
           </button>

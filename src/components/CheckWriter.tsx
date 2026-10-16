@@ -472,7 +472,7 @@ export default function CheckWriter({
         </p>
         <Link
           href="/accounts"
-          className="mt-4 inline-block rounded-full bg-[#0071e3] px-4 py-2 text-sm font-semibold text-white"
+          className="mt-4 inline-block rounded-full bg-[#2e51f0] px-4 py-2 text-sm font-semibold text-white"
         >
           Add an account
         </Link>
@@ -504,7 +504,7 @@ export default function CheckWriter({
         ) : null}
 
         <Card className="p-5">
-          <h2 className="text-base font-bold text-slate-900">Check details</h2>
+          <h2 className="text-base font-semibold text-slate-900">Check details</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <Field label="Amount" hint={legalAmount(amountCents)}>
               <input
@@ -591,7 +591,7 @@ export default function CheckWriter({
                     onClick={() => setVoidNotice(value)}
                     className={`rounded-full px-3 py-1 text-[11px] font-semibold transition ${
                       voidNotice === value
-                        ? "bg-[#1d1d1f] text-white"
+                        ? "bg-[#16171c] text-white"
                         : "text-slate-600 hover:bg-slate-100"
                     }`}
                   >
@@ -627,7 +627,7 @@ export default function CheckWriter({
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-base font-bold text-slate-900">Bank account</h2>
+          <h2 className="text-base font-semibold text-slate-900">Bank account</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <Field label="Account to draw from">
               <select
@@ -664,7 +664,7 @@ export default function CheckWriter({
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-base font-bold text-slate-900">Design</h2>
+          <h2 className="text-base font-semibold text-slate-900">Design</h2>
           <div className="mt-3">
             <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Paper format
@@ -677,7 +677,7 @@ export default function CheckWriter({
                   onClick={() => setLayout(l.id)}
                   className={`rounded-lg border p-3 text-left transition ${
                     layout === l.id
-                      ? "border-[#0071e3] bg-blue-50/60 ring-2 ring-[#0071e3]/15"
+                      ? "border-[#2e51f0] bg-blue-50/60 ring-2 ring-[#2e51f0]/15"
                       : "border-slate-200 bg-white hover:border-slate-300"
                   }`}
                 >
@@ -693,7 +693,7 @@ export default function CheckWriter({
               <span className="text-xs font-semibold text-slate-700">
                 Background — <span className="text-slate-900">{getBackground(background).name}</span>
               </span>
-              <span className="text-[11px] font-semibold text-[#0071e3]">
+              <span className="text-[11px] font-semibold text-[#2e51f0]">
                 {typeof window === "undefined" ? "Change" : "Click to choose"}
               </span>
             </summary>
@@ -717,7 +717,7 @@ export default function CheckWriter({
                         disabled={Boolean(editing)}
                         className={`flex items-center gap-2 rounded-lg border p-2 text-left transition ${
                           background === b.id
-                            ? "border-[#0071e3] bg-blue-50/60 ring-2 ring-[#0071e3]/15"
+                            ? "border-[#2e51f0] bg-blue-50/60 ring-2 ring-[#2e51f0]/15"
                             : editing
                               ? "border-slate-200 bg-white opacity-60"
                               : "border-slate-200 bg-white hover:border-slate-300"
@@ -750,7 +750,7 @@ export default function CheckWriter({
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-base font-bold text-slate-900">Signature &amp; logos</h2>
+          <h2 className="text-base font-semibold text-slate-900">Signature &amp; logos</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             <Field label="Signature method">
               <select
@@ -902,7 +902,7 @@ export default function CheckWriter({
 
         <Card className="p-5">
           <details>
-            <summary className="cursor-pointer list-none text-base font-bold text-slate-900">
+            <summary className="cursor-pointer list-none text-base font-semibold text-slate-900">
               Advanced — MICR type &amp; bank format
             </summary>
             <p className="mt-2 text-xs leading-relaxed text-slate-600">
@@ -1123,7 +1123,7 @@ export default function CheckWriter({
               type="button"
               disabled={busy || !balanceOk || compliance.blockers > 0}
               onClick={() => saveAndCharge()}
-              className="rounded-full bg-[#0071e3] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="rounded-full bg-[#2e51f0] px-4 py-2 text-sm font-semibold text-white  disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {busy ? "Working…" : !balanceOk ? "Add $10 to print" : "Save & print — $10"}
             </button>

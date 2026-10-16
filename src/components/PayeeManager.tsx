@@ -109,7 +109,7 @@ function PayeeForm({
           type="button"
           disabled={busy}
           onClick={onSubmit}
-          className="rounded-full bg-[#0071e3] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0077ed] disabled:opacity-50"
+          className="rounded-full bg-[#2e51f0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3d68ff] disabled:opacity-50"
         >
           {busy ? "Saving…" : editing ? "Save changes" : "Add payee"}
         </button>
@@ -198,7 +198,7 @@ export default function PayeeManager({ payees }: { payees: PayeeRow[] }) {
               setAdding(true);
             }
           }}
-          className="rounded-full bg-[#1d1d1f] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+          className="rounded-full bg-[#16171c] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
         >
           {adding ? "Close" : "+ Add payee"}
         </button>
@@ -206,7 +206,7 @@ export default function PayeeManager({ payees }: { payees: PayeeRow[] }) {
 
       {adding ? (
         <Card className="p-5">
-          <h2 className="mb-3 text-base font-bold text-slate-900">New payee</h2>
+          <h2 className="mb-3 text-base font-semibold text-slate-900">New payee</h2>
           <PayeeForm
             form={form}
             setForm={setForm}
@@ -236,7 +236,7 @@ export default function PayeeManager({ payees }: { payees: PayeeRow[] }) {
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900">{p.name}</span>
+                    <span className="text-sm font-semibold text-slate-900">{p.name}</span>
                     {p.isBusiness ? <Badge tone="indigo">business</Badge> : null}
                   </div>
                   <div className="mt-0.5 whitespace-pre-line text-xs text-slate-500">{p.address}</div>
@@ -294,7 +294,7 @@ export default function PayeeManager({ payees }: { payees: PayeeRow[] }) {
 
               {editing ? (
                 <div className="mt-4 border-t border-slate-100 pt-4">
-                  <h3 className="mb-3 text-sm font-bold text-slate-900">Edit “{p.name}”</h3>
+                  <h3 className="mb-3 text-sm font-semibold text-slate-900">Edit “{p.name}”</h3>
                   <PayeeForm
                     form={form}
                     setForm={setForm}

@@ -15,9 +15,9 @@ export default async function OnboardingPage({
   const sp = await searchParams;
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] px-4 py-8 sm:py-14">
+    <div className="min-h-screen bg-[#f7f7f8] px-4 py-8 sm:py-14">
       <div className="mx-auto max-w-xl">
-        <p className="text-center text-lg font-bold tracking-tight text-[#1d1d1f]">eCheckPay</p>
+        <p className="text-center text-lg font-semibold tracking-tight text-[#16171c]">eCheckPay</p>
         <OnboardingWizard
           email={user.email}
           prefilled={{

@@ -1,62 +1,73 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { isAuthed } from "@/lib/auth";
+import Brand from "@/components/Brand";
 
 export default async function WelcomeLayout({ children }: { children: ReactNode }) {
   const authed = await isAuthed();
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7]">
-      <nav className="no-print sticky top-0 z-40 h-12 border-b border-black/5 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-6">
-          <Link href="/" className="text-[17px] font-semibold tracking-tight text-[#1d1d1f]">
-            eCheckPay
-          </Link>
-          <div className="flex items-center gap-6 text-xs font-medium text-[#1d1d1f]">
-            <Link href="/#features" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
-              Features
-            </Link>
-            <Link href="/#how" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
-              How it works
-            </Link>
-            <Link href="/#security" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
-              Security
-            </Link>
-            <Link href="/#faq" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
-              FAQ
-            </Link>
+    <div className="flex min-h-screen flex-col bg-white">
+      <nav className="no-print sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Brand href="/" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="hidden items-center gap-1 lg:flex">
+              <Link href="/#features" className="nav-link">
+                Features
+              </Link>
+              <Link href="/#how" className="nav-link">
+                How it works
+              </Link>
+              <Link href="/#security" className="nav-link">
+                Security
+              </Link>
+              <Link href="/#faq" className="nav-link">
+                FAQ
+              </Link>
+            </div>
             {authed ? (
-              <Link href="/dashboard" className="opacity-80 transition hover:opacity-100">
+              <Link href="/dashboard" className="btn btn-ghost btn-sm">
                 Dashboard
               </Link>
-            ) : null}
-            <Link
-              href="/login?next=%2Fdashboard"
-              className="rounded-full bg-[#0071e3] px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-[#0077ed]"
-            >
+            ) : (
+              <Link href="/login" className="hidden text-[13px] font-semibold text-slate-600 transition hover:text-slate-900 sm:inline">
+                Sign in
+              </Link>
+            )}
+            <Link href="/register" className="btn btn-dark btn-sm">
               Get started
             </Link>
           </div>
         </div>
       </nav>
-      {children}
-      <footer className="border-t border-black/5 bg-white">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-xs leading-relaxed text-[#86868b]">
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            <span className="font-semibold text-[#1d1d1f]">eCheckPay</span>
-            <Link href="/standards" className="transition hover:text-[#1d1d1f]">
-              Standards
-            </Link>
-            <Link href="/login" className="transition hover:text-[#1d1d1f]">
-              Sign in
-            </Link>
+
+      <div className="flex-1">{children}</div>
+
+      <footer className="border-t border-slate-200/70 bg-white">
+        <div className="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+            <Brand href="/" />
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-medium text-slate-500">
+              <Link href="/standards" className="transition hover:text-slate-900">
+                Standards
+              </Link>
+              <Link href="/login" className="transition hover:text-slate-900">
+                Sign in
+              </Link>
+              <Link href="/register" className="transition hover:text-slate-900">
+                Create account
+              </Link>
+            </div>
           </div>
-          <p className="mt-3 max-w-3xl">
+          <p className="mt-5 max-w-3xl text-xs leading-relaxed text-slate-400">
             Bank acceptance depends on physical output: print at 100% scale on 24 lb+ security
             stock with magnetic (iron-oxide) MICR toner or pre-printed MICR blank stock, and issue a
             Positive Pay file. eCheckPay is for drawing on accounts you own or control.
           </p>
-          <p className="mt-2">© {new Date().getFullYear()} eCheckPay. E-13B · ANSI X9.27 · X9.100-160-1 · UCC Article 3.</p>
+          <p className="mt-3 text-xs text-slate-400">
+            © {new Date().getFullYear()} eCheckPay · E-13B · ANSI X9.27 · X9.100-160-1 · UCC Article 3
+          </p>
         </div>
       </footer>
     </div>

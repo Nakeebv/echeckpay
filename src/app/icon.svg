@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="eCheckPay">
-  <rect width="64" height="64" rx="14" fill="#1d1d1f"/>
-  <rect x="16" y="14" width="32" height="36" rx="4" fill="#ffffff" opacity="0.10"/>
-  <path d="M17 34.5 L27 44.5 L48 21" fill="none" stroke="#34d399" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect width="64" height="64" rx="14" fill="#16171c"/>
+  <rect x="16" y="14" width="32" height="36" rx="4" fill="#ffffff" opacity="0.08"/>
+  <path d="M17 34.5 L27 44.5 L48 21" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

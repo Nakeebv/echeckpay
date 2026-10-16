@@ -46,7 +46,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
       <section>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Dashboard</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {ACTIONS.map((a) => (
             <Link
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
               href={a.href}
               className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-slate-300 hover:shadow"
             >
-              <div className="text-base font-semibold text-slate-900 group-hover:text-[#0071e3]">
+              <div className="text-base font-semibold text-slate-900 group-hover:text-[#2e51f0]">
                 {a.title}
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-500">{a.body}</p>
@@ -76,13 +76,13 @@ export default async function DashboardPage() {
           <SectionTitle
             title="Recent checks"
             right={
-              <Link href="/checks" className="text-sm font-semibold text-[#0071e3] hover:underline">
+              <Link href="/checks" className="text-sm font-semibold text-[#2e51f0] hover:underline">
                 History →
               </Link>
             }
           />
-          <Card className="overflow-hidden">
-            <table className="w-full text-sm">
+          <Card className="table-stack overflow-hidden">
+            <table className="w-full min-w-[520px] text-sm">
               <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-4 py-2.5">Check</th>
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
                 {recent.length === 0 ? (
                   <tr>
                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500">
-                      No checks yet — <Link href="/write" className="font-semibold text-[#0071e3]">write one</Link>.
+                      No checks yet — <Link href="/write" className="font-semibold text-[#2e51f0]">write one</Link>.
                     </td>
                   </tr>
                 ) : null}

@@ -59,7 +59,7 @@ export default function StandardsPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
           Bank acceptance specification
         </h1>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
@@ -80,7 +80,7 @@ export default function StandardsPage() {
             <dl className="divide-y divide-slate-100">
               {s.rows.map(([k, v]) => (
                 <div key={k} className="px-4 py-3">
-                  <dt className="text-xs font-bold text-slate-900">{k}</dt>
+                  <dt className="text-xs font-semibold text-slate-900">{k}</dt>
                   <dd className="mt-0.5 text-xs leading-relaxed text-slate-600">{v}</dd>
                 </div>
               ))}
@@ -98,7 +98,7 @@ export default function StandardsPage() {
           {LAYOUT_LIST.map((l) => (
             <Card key={l.id} className="p-4">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-sm font-bold text-slate-900">{l.name}</h3>
+                <h3 className="text-sm font-semibold text-slate-900">{l.name}</h3>
                 <Badge tone={l.supportsAuxOnUs ? "indigo" : "slate"}>
                   {l.supportsAuxOnUs ? "Aux On-Us serial" : "On-Us serial"}
                 </Badge>

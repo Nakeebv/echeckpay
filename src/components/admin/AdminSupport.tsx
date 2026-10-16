@@ -73,7 +73,7 @@ export default function AdminSupport({
         </p>
       ) : (
         threads.map((t) => (
-          <div key={t.id} className="rounded-2xl border border-black/5 bg-white shadow-sm">
+          <div key={t.id} className="card-surface">
             <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <button type="button" onClick={() => void openThread(t.id)} className="min-w-0 text-left">
                 <div className="truncate text-sm font-semibold text-slate-800">{t.subject}</div>
@@ -107,8 +107,8 @@ export default function AdminSupport({
                       key={m.id}
                       className={`rounded-xl px-3 py-2 text-sm ${
                         m.authorRole === "admin"
-                          ? "ml-8 bg-[#0071e3]/10 text-slate-800"
-                          : "mr-8 bg-[#f5f5f7] text-slate-800"
+                          ? "ml-8 bg-[#2e51f0]/10 text-slate-800"
+                          : "mr-8 bg-[#f7f7f8] text-slate-800"
                       }`}
                     >
                       <div className="mb-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -127,7 +127,7 @@ export default function AdminSupport({
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Write instructions or a resolution…"
-                  className="mt-3 h-20 w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm outline-none focus:border-[#0071e3]"
+                  className="mt-3 field-base h-20"
                 />
                 <div className="mt-2 flex gap-2">
                   <button

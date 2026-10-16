@@ -70,17 +70,17 @@ const FEATURES = [
 
 const STEPS = [
   {
-    n: "1",
+    n: "01",
     title: "Add your bank account",
     body: "Routing and account numbers from the bottom of an existing check. Stored only on your own server.",
   },
   {
-    n: "2",
+    n: "02",
     title: "Write the check",
     body: "Pick a payee, type the amount, choose a design. It's checked for bank acceptance as you go.",
   },
   {
-    n: "3",
+    n: "03",
     title: "Print and file",
     body: "Print on security paper with a laser printer, then send your bank the matching issue file. Each print is $10.",
   },
@@ -120,38 +120,39 @@ export default function WelcomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="overflow-hidden px-6 pb-10 pt-14 text-center sm:pt-20">
-        <Link
-          href="/#features"
-          className="inline-flex items-center gap-2 rounded-full border border-black/5 bg-white px-3.5 py-1 text-xs font-medium text-[#6e6e73] shadow-sm"
-        >
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#0071e3]" />
-          Bank-accepted check printing for your business
-        </Link>
-        <h1 className="mx-auto mt-5 max-w-3xl text-4xl font-semibold tracking-tight text-[#1d1d1f] sm:text-5xl lg:text-6xl">
-          Checks your bank accepts.
-          <br />
-          Written in minutes.
-        </h1>
-        <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[#6e6e73]">
-          Write, print and track checks from any computer — with real bank-standard account
-          numbers, built-in security features and one-click fraud protection.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/register"
-            className="rounded-full bg-[#0071e3] px-6 py-3 text-[15px] font-semibold text-white shadow-sm transition hover:bg-[#0077ed]"
-          >
-            Get started
-          </Link>
-          <Link href="/login" className="text-[15px] font-medium text-[#0071e3] transition hover:underline">
-            Sign in →
-          </Link>
+      <section className="relative overflow-hidden px-4 pb-16 pt-14 sm:px-6 sm:pt-24">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(46,81,240,0.10),transparent_70%)]"
+        />
+        <div className="relative mx-auto max-w-3xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1 text-xs font-medium text-slate-600 shadow-sm">
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#2e51f0]" />
+            Bank-accepted check printing for your business
+          </span>
+          <h1 className="mt-6 text-balance text-[2.5rem] font-semibold leading-[1.05] tracking-[-0.03em] text-slate-900 sm:text-6xl lg:text-[4.25rem]">
+            Checks your bank accepts.
+            <br />
+            <span className="text-slate-400">Written in minutes.</span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-pretty text-base leading-relaxed text-slate-600 sm:text-lg">
+            Write, print and track checks from any computer — with real bank-standard account
+            numbers, built-in security features and one-click fraud protection.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+            <Link href="/register" className="btn btn-dark btn-lg w-full sm:w-auto">
+              Get started
+            </Link>
+            <Link href="/login" className="btn btn-ghost btn-lg w-full sm:w-auto">
+              Sign in
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
 
         {/* Hero product visual */}
         <div className="relative mx-auto mt-14 max-w-4xl">
-          <div className="pointer-events-none absolute -inset-x-8 -top-10 bottom-16 bg-gradient-to-b from-[#0071e3]/10 via-transparent to-transparent blur-2xl" />
+          <div className="pointer-events-none absolute -inset-x-10 -top-12 bottom-16 bg-gradient-to-b from-[#2e51f0]/10 via-transparent to-transparent blur-2xl" />
           <img
             src="/images/hero-check.webp"
             width={1280}
@@ -161,34 +162,39 @@ export default function WelcomePage() {
             alt="An eCheckPay check with a true E-13B MICR line, ready to print"
             className="doc-shadow relative mx-auto w-full max-w-3xl rounded-2xl"
           />
-          <p className="mt-4 text-[11px] font-medium uppercase tracking-wider text-slate-400">
+          <p className="mt-5 text-center text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400">
             True E-13B · protected 5/8&Prime; clear band · printed from your browser
           </p>
         </div>
 
-        <p className="mt-10 font-mono text-[11px] tracking-wider text-[#86868b]">
+        <p className="mt-12 text-center font-mono text-[11px] tracking-wider text-slate-400">
           E-13B · ANSI X9.27 · X9.100-160-1 · X9.6 · UCC ARTICLE 3
         </p>
       </section>
 
       {/* Features */}
-      <section id="features" className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mx-auto max-w-2xl text-center text-3xl font-semibold tracking-tight text-[#1d1d1f] sm:text-4xl">
-            Everything a returned check isn&rsquo;t.
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-base leading-relaxed text-[#6e6e73]">
-            Most check writers produce a decorative document. eCheckPay produces an instrument —
-            built to the same standard your bank prints to.
-          </p>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section id="features" className="scroll-mt-16 bg-slate-50 px-4 py-20 sm:px-6 sm:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">Why eCheckPay</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+              Everything a returned check isn&rsquo;t.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-slate-600">
+              Most check writers produce a decorative document. eCheckPay produces an instrument —
+              built to the same standard your bank prints to.
+            </p>
+          </div>
+          <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 [&>*]:bg-white sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div key={f.title} className="rounded-2xl bg-[#f5f5f7] p-6 transition hover:bg-[#ebebed]">
-                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#0071e3] shadow-sm">
+              <div key={f.title} className="group p-7 transition-colors hover:bg-slate-50">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2e51f0]/10 text-[#2e51f0]">
                   {f.icon}
                 </span>
-                <h3 className="mt-4 text-[17px] font-semibold text-[#1d1d1f]">{f.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-[#6e6e73]">{f.body}</p>
+                <h3 className="mt-5 text-[17px] font-semibold tracking-tight text-slate-900">
+                  {f.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{f.body}</p>
               </div>
             ))}
           </div>
@@ -196,19 +202,23 @@ export default function WelcomePage() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="bg-[#f5f5f7] px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-3xl font-semibold tracking-tight text-[#1d1d1f] sm:text-4xl">
-            Three steps. No surprises.
-          </h2>
-          <div className="mt-12 grid gap-10 sm:grid-cols-3">
+      <section id="how" className="scroll-mt-16 bg-white px-4 py-20 sm:px-6 sm:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">Three steps</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+              No surprises.
+            </h2>
+          </div>
+          <div className="mt-14 grid gap-10 sm:grid-cols-3 sm:gap-8">
             {STEPS.map((s) => (
-              <div key={s.n} className="text-center">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#1d1d1f] text-sm font-bold text-white">
-                  {s.n}
-                </div>
-                <h3 className="mt-4 text-[17px] font-semibold text-[#1d1d1f]">{s.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-[#6e6e73]">{s.body}</p>
+              <div key={s.n} className="relative text-center sm:text-left">
+                <div className="text-sm font-semibold tabular-nums text-[#2e51f0]">{s.n}</div>
+                <div className="mt-3 h-px w-full bg-slate-200" />
+                <h3 className="mt-5 text-[17px] font-semibold tracking-tight text-slate-900">
+                  {s.title}
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{s.body}</p>
               </div>
             ))}
           </div>
@@ -216,22 +226,29 @@ export default function WelcomePage() {
       </section>
 
       {/* Security (dark, imagery) */}
-      <section id="security" className="overflow-hidden bg-[#1d1d1f] px-6 py-20 text-white">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+      <section
+        id="security"
+        className="relative scroll-mt-16 overflow-hidden bg-[#0c0d11] px-4 py-20 text-white sm:px-6 sm:py-28"
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_50%_at_85%_20%,rgba(46,81,240,0.22),transparent_70%)]"
+        />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
           <div>
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Security that lives on the paper.
+            <p className="eyebrow !text-white/40">Security that lives on the paper</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Printed by the software, not bolted on.
             </h2>
-            <p className="mt-4 text-base leading-relaxed text-[#a1a1a6]">
-              The anti-counterfeit stack is printed by the software, not bolted on — microprint
-              borders, the padlock mark, tamper-evident chemistry and the rear disclosure clause
-              your bank expects to find.
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-white/60">
+              Microprint borders, the padlock mark, tamper-evident chemistry and the rear
+              disclosure clause your bank expects to find — on every check, automatically.
             </p>
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+            <div className="mt-10 grid gap-x-8 gap-y-6 sm:grid-cols-2">
               {SPEC.map((s) => (
-                <div key={s.k}>
+                <div key={s.k} className="border-t border-white/10 pt-4">
                   <h3 className="text-sm font-semibold text-white">{s.k}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-[#a1a1a6]">{s.v}</p>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/55">{s.v}</p>
                 </div>
               ))}
             </div>
@@ -243,31 +260,67 @@ export default function WelcomePage() {
             loading="lazy"
             decoding="async"
             alt="Security details printed on every eCheckPay check"
-            className="w-full rounded-2xl shadow-2xl"
+            className="w-full rounded-2xl shadow-2xl ring-1 ring-white/10"
           />
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="bg-white px-6 py-20">
+      <section id="faq" className="scroll-mt-16 bg-white px-4 py-20 sm:px-6 sm:py-28">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-center text-3xl font-semibold tracking-tight text-[#1d1d1f] sm:text-4xl">
-            Questions, answered.
-          </h2>
-          <div className="mt-10 divide-y divide-slate-200">
+          <div className="text-center">
+            <p className="eyebrow">FAQ</p>
+            <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+              Questions, answered.
+            </h2>
+          </div>
+          <div className="mt-12 divide-y divide-slate-200 border-y border-slate-200">
             {FAQ.map((f) => (
-              <details key={f.q} className="group py-4">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-semibold text-[#1d1d1f]">
+              <details key={f.q} className="group py-5">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] font-semibold text-slate-900">
                   {f.q}
-                  <span className="text-lg text-[#86868b] transition group-open:rotate-45">+</span>
+                  <span className="text-xl font-light text-slate-400 transition group-open:rotate-45">
+                    +
+                  </span>
                 </summary>
-                <p className="mt-2 text-sm leading-relaxed text-[#6e6e73]">{f.a}</p>
+                <p className="mt-3 pr-8 text-sm leading-relaxed text-slate-600">{f.a}</p>
               </details>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Final CTA */}
+      <section className="bg-slate-50 px-4 pb-24 sm:px-6">
+        <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-[#0c0d11] px-6 py-16 text-center text-white sm:px-12 sm:py-20">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(45%_60%_at_50%_0%,rgba(46,81,240,0.35),transparent_70%)]"
+          />
+          <div className="relative">
+            <h2 className="mx-auto max-w-2xl text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+              Start printing checks your bank accepts.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-base leading-relaxed text-white/60">
+              Create an account, add a bank account and print your first check in minutes.
+            </p>
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/register"
+                className="btn btn-lg w-full bg-white text-slate-900 hover:bg-white/90 sm:w-auto"
+              >
+                Get started
+              </Link>
+              <Link
+                href="/standards"
+                className="btn btn-lg w-full border border-white/20 text-white hover:bg-white/10 sm:w-auto"
+              >
+                Read the standards
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

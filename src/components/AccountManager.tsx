@@ -265,7 +265,7 @@ function AccountForm({
           type="button"
           disabled={busy}
           onClick={onSubmit}
-          className="rounded-full bg-[#0071e3] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0077ed] disabled:opacity-50"
+          className="rounded-full bg-[#2e51f0] px-4 py-2 text-sm font-semibold text-white hover:bg-[#3d68ff] disabled:opacity-50"
         >
           {busy ? "Saving…" : editingId ? "Save changes" : "Save account"}
         </button>
@@ -387,7 +387,7 @@ export default function AccountManager({ accounts }: { accounts: AccountRow[] })
         <button
           type="button"
           onClick={startCreate}
-          className="rounded-full bg-[#1d1d1f] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
+          className="rounded-full bg-[#16171c] px-4 py-2 text-sm font-semibold text-white hover:bg-black"
         >
           {adding ? "Close" : "+ Add account"}
         </button>
@@ -395,7 +395,7 @@ export default function AccountManager({ accounts }: { accounts: AccountRow[] })
 
       {adding ? (
         <Card className="p-5">
-          <h2 className="mb-3 text-base font-bold text-slate-900">New account</h2>
+          <h2 className="mb-3 text-base font-semibold text-slate-900">New account</h2>
           <AccountForm
             form={form}
             setForm={setForm}
@@ -420,7 +420,7 @@ export default function AccountManager({ accounts }: { accounts: AccountRow[] })
                   onClick={() => (editing ? null : startEdit(a))}
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900">{a.label}</span>
+                    <span className="text-sm font-semibold text-slate-900">{a.label}</span>
                     <Badge tone={a.accountClass === "personal" ? "slate" : "indigo"}>
                       {a.accountClass}
                     </Badge>
@@ -484,7 +484,7 @@ export default function AccountManager({ accounts }: { accounts: AccountRow[] })
 
               {editing ? (
                 <div className="mt-4 border-t border-slate-100 pt-4">
-                  <h3 className="mb-3 text-sm font-bold text-slate-900">Edit “{a.label}”</h3>
+                  <h3 className="mb-3 text-sm font-semibold text-slate-900">Edit “{a.label}”</h3>
                   <AccountForm
                     form={form}
                     setForm={setForm}

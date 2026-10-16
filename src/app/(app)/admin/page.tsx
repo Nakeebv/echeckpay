@@ -63,7 +63,7 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">Admin console</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-[#16171c]">Admin console</h1>
         <p className="mt-1 text-sm text-slate-600">
           The operator desk — users, money flow, complaints and the audit record.
         </p>
@@ -71,7 +71,7 @@ export default async function AdminPage() {
           {stats.map((s) => (
             <div key={s.label} className="stat-tile">
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{s.label}</div>
-              <div className="mt-1 truncate text-2xl font-bold tabular-nums text-[#1d1d1f]">{s.value}</div>
+              <div className="mt-1 truncate text-2xl font-bold tabular-nums text-[#16171c]">{s.value}</div>
               <div className="mt-0.5 text-[11px] text-slate-500">{s.sub}</div>
             </div>
           ))}
@@ -92,7 +92,7 @@ export default async function AdminPage() {
       />
 
       <section>
-        <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Deposit orders</h2>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Deposit orders</h2>
         <AdminOrders
           orders={orderRows.map((o) => ({
             id: o.id,
@@ -105,7 +105,7 @@ export default async function AdminPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Complaints &amp; requests</h2>
+        <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Complaints &amp; requests</h2>
         <AdminSupport
           threads={threadRows.map((t) => ({
             id: t.id,
@@ -118,8 +118,8 @@ export default async function AdminPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Platform audit trail</h2>
-        <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Platform audit trail</h2>
+        <div className="divide-y divide-black/5 card-surface">
           {audits.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-slate-500">No events yet.</p>
           ) : (

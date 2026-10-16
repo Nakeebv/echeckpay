@@ -39,13 +39,13 @@ export default async function AdminUserDetailPage({
 
   return (
     <div className="space-y-8">
-      <Link href="/admin" className="text-sm font-semibold text-[#0071e3] hover:underline">
+      <Link href="/admin" className="text-sm font-semibold text-[#2e51f0] hover:underline">
         ← Admin console
       </Link>
 
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1d1d1f]">{target.email}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#16171c]">{target.email}</h1>
           <p className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
             <span>#{target.id}</span>
             <span className="capitalize">{target.role}</span>
@@ -54,7 +54,7 @@ export default async function AdminUserDetailPage({
             <span>joined {target.createdAt.toLocaleDateString()}</span>
           </p>
         </div>
-        <div className="rounded-2xl bg-[#1d1d1f] px-6 py-4 text-white">
+        <div className="rounded-2xl bg-[#16171c] px-6 py-4 text-white">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-white/60">Balance</div>
           <div className="text-3xl font-bold tabular-nums">{formatCents(target.balanceCents)}</div>
         </div>
@@ -64,8 +64,8 @@ export default async function AdminUserDetailPage({
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div>
-          <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Checks ({userChecks.length})</h2>
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Checks ({userChecks.length})</h2>
+          <div className="divide-y divide-black/5 card-surface">
             {userChecks.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-slate-500">No checks.</p>
             ) : (
@@ -83,8 +83,8 @@ export default async function AdminUserDetailPage({
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Bank accounts ({accountCount})</h2>
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Bank accounts ({accountCount})</h2>
+          <div className="divide-y divide-black/5 card-surface">
             {accounts.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-slate-500">No accounts.</p>
             ) : (
@@ -99,8 +99,8 @@ export default async function AdminUserDetailPage({
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Deposits</h2>
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Deposits</h2>
+          <div className="divide-y divide-black/5 card-surface">
             {orders.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-slate-500">No deposits.</p>
             ) : (
@@ -119,8 +119,8 @@ export default async function AdminUserDetailPage({
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Ledger</h2>
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Ledger</h2>
+          <div className="divide-y divide-black/5 card-surface">
             {ledger.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-slate-500">No transactions.</p>
             ) : (
@@ -140,8 +140,8 @@ export default async function AdminUserDetailPage({
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Support threads</h2>
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Support threads</h2>
+          <div className="divide-y divide-black/5 card-surface">
             {threads.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-slate-500">No threads.</p>
             ) : (
@@ -156,8 +156,8 @@ export default async function AdminUserDetailPage({
         </div>
 
         <div>
-          <h2 className="mb-3 text-lg font-bold tracking-tight text-[#1d1d1f]">Audit trail</h2>
-          <div className="divide-y divide-black/5 rounded-2xl border border-black/5 bg-white shadow-sm">
+          <h2 className="mb-3 text-lg font-semibold tracking-tight text-[#16171c]">Audit trail</h2>
+          <div className="divide-y divide-black/5 card-surface">
             {audits.length === 0 ? (
               <p className="px-4 py-6 text-center text-sm text-slate-500">No events.</p>
             ) : (

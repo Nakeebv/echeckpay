@@ -1,32 +1,153 @@
 @import "tailwindcss";
 
-:root {
-  --ink: #0b1220;
+/* ==========================================================================
+   eCheckPay — design system
+   One accent (cobalt), a warm graphite neutral ramp, and Inter.
+   The @theme block below remaps Tailwind's built-in palettes so every
+   existing `slate-*`, `teal-*` and `blue-*` utility resolves to this system.
+   ========================================================================== */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* neutrals — graphite (overrides Tailwind "slate") */
+  --color-slate-50: #f7f7f8;
+  --color-slate-100: #f0f1f3;
+  --color-slate-200: #e5e6ea;
+  --color-slate-300: #d3d5db;
+  --color-slate-400: #9ca0ab;
+  --color-slate-500: #6d717c;
+  --color-slate-600: #545863;
+  --color-slate-700: #3e414a;
+  --color-slate-800: #292b32;
+  --color-slate-900: #16171c;
+  --color-slate-950: #0c0d11;
+
+  /* accent — cobalt (overrides Tailwind "teal" and "blue") */
+  --color-teal-50: #eef2ff;
+  --color-teal-100: #e0e8ff;
+  --color-teal-200: #c6d4ff;
+  --color-teal-300: #a2b8ff;
+  --color-teal-400: #7a95ff;
+  --color-teal-500: #4f6dff;
+  --color-teal-600: #2e51f0;
+  --color-teal-700: #2440d4;
+  --color-teal-800: #2036ac;
+  --color-teal-900: #1f3088;
+  --color-teal-950: #141d52;
+
+  --color-blue-50: #eef2ff;
+  --color-blue-100: #e0e8ff;
+  --color-blue-200: #c6d4ff;
+  --color-blue-300: #a2b8ff;
+  --color-blue-400: #7a95ff;
+  --color-blue-500: #4f6dff;
+  --color-blue-600: #2e51f0;
+  --color-blue-700: #2440d4;
+  --color-blue-800: #2036ac;
+  --color-blue-900: #1f3088;
+  --color-blue-950: #141d52;
+
+  /* status — refined, muted so nothing shouts */
+  --color-emerald-50: #ecf7f1;
+  --color-emerald-100: #d4efe0;
+  --color-emerald-200: #a7dfc1;
+  --color-emerald-300: #74c99c;
+  --color-emerald-400: #42b079;
+  --color-emerald-500: #1f9761;
+  --color-emerald-600: #137a4e;
+  --color-emerald-700: #0f6340;
+  --color-emerald-800: #0e4f35;
+  --color-emerald-900: #0c412d;
+
+  --color-amber-50: #fdf6ec;
+  --color-amber-100: #f9e9cf;
+  --color-amber-200: #f2d29c;
+  --color-amber-300: #e9b563;
+  --color-amber-400: #dd9a35;
+  --color-amber-500: #c97f18;
+  --color-amber-600: #a86410;
+  --color-amber-700: #854e11;
+  --color-amber-800: #6d4014;
+  --color-amber-900: #5b3614;
+
+  --color-rose-50: #fdf0ef;
+  --color-rose-100: #fbe0dd;
+  --color-rose-200: #f6c3be;
+  --color-rose-300: #ef9c94;
+  --color-rose-400: #e46b60;
+  --color-rose-500: #d24438;
+  --color-rose-600: #ba3227;
+  --color-rose-700: #9c2921;
+  --color-rose-800: #802620;
+  --color-rose-900: #6b241f;
 }
 
-/*
- * Bundled E-13B typeface — generated from the Payments Canada Standard 006
+/* --------------------------------------------------------------- */
+/* Base                                                            */
+/* --------------------------------------------------------------- */
+:root {
+  --accent: #2e51f0;
+  --accent-hover: #3d68ff;
+  --ink: #16171c;
+  --muted: #545863;
+  --faint: #9ca0ab;
+  --surface: #ffffff;
+  --canvas: #f7f7f8;
+  --line: rgba(12, 13, 17, 0.09);
+  --line-soft: rgba(12, 13, 17, 0.06);
+  --dark: #0c0d11;
+  --dark-2: #16171c;
+  --doc-shadow: 0 1px 2px rgba(12, 13, 17, 0.08), 0 24px 48px -24px rgba(12, 13, 17, 0.4);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body {
+  background: var(--canvas);
+}
+
+body {
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.021em;
+}
+
+::selection {
+  background: rgba(46, 81, 240, 0.16);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Bundled E-13B typeface — generated from the Payments Canada Standard 006
  * stroke specification (SVG outlines © 2021 Zachary Schneider, SIL OFL 1.1),
  * compiled to TrueType with a 0.75 em advance so at exactly 12 pt the
  * character pitch is 1/8 inch — 8 characters per inch, as the ANSI X9.6
  * position grid requires. No letter-spacing, ever. Swap in your own
- * accredited face from the account screen if your bank specifies one.
- */
+ * accredited face from the account screen if your bank specifies one. */
 @font-face {
   font-family: "MICR E13B";
   src: url("/fonts/micr-e13b.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: block;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-html,
-body {
-  background: #fff;
 }
 
 /* --------------------------------------------------------------- */
@@ -82,9 +203,7 @@ body {
 
 /* Screen-only chrome around documents */
 .doc-shadow {
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.08),
-    0 18px 40px -18px rgba(15, 23, 42, 0.35);
+  box-shadow: var(--doc-shadow);
 }
 
 .check-scale {
@@ -92,28 +211,54 @@ body {
 }
 
 input[type="range"] {
-  accent-color: #0f766e;
+  accent-color: var(--accent);
 }
 
 /* --------------------------------------------------------------- */
-/* Design system — Apple-minimal, consistent across the app         */
+/* Primitives                                                      */
 /* --------------------------------------------------------------- */
-:root {
-  --brand: #0071e3;
-  --brand-hover: #0077ed;
-  --ink: #1d1d1f;
-  --muted: #6e6e73;
-  --surface: #f5f5f7;
-  --line: rgba(0, 0, 0, 0.08);
-}
-
 /* interactive cursors (Tailwind v4 preflight resets them to default) */
 button:not(:disabled),
 [role="button"]:not(:disabled),
 summary,
 label:has(> input[type="checkbox"]),
-a { cursor: pointer; }
+label:has(> input[type="radio"]),
+a {
+  cursor: pointer;
+}
 
+.container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+}
+@media (min-width: 640px) {
+  .container-page {
+    padding-inline: 1.5rem;
+  }
+}
+
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.link {
+  color: var(--accent);
+  font-weight: 600;
+  transition: color 0.15s ease;
+}
+.link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -123,93 +268,173 @@ a { cursor: pointer; }
   font-weight: 600;
   font-size: 0.875rem;
   line-height: 1;
-  padding: 0.625rem 1.25rem;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, transform 0.05s ease;
+  padding: 0.6875rem 1.25rem;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, opacity 0.15s ease, transform 0.06s ease;
   cursor: pointer;
   white-space: nowrap;
 }
-.btn:active { transform: translateY(0.5px); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-primary { background: var(--brand); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: var(--brand-hover); }
-.btn-dark { background: var(--ink); color: #fff; }
-.btn-dark:hover:not(:disabled) { background: #000; }
-.btn-ghost { background: #fff; color: #374151; border: 1px solid rgba(0,0,0,0.13); }
-.btn-ghost:hover:not(:disabled) { background: #f5f5f7; }
-.btn-danger { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-.btn-danger:hover:not(:disabled) { background: #fecaca; }
-.btn-sm { padding: 0.4rem 0.85rem; font-size: 0.75rem; }
-.btn-lg { padding: 0.85rem 1.75rem; font-size: 1rem; }
-
-.card-surface {
+.btn:active {
+  transform: translateY(0.5px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(12, 13, 17, 0.16);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+.btn-dark {
+  background: var(--ink);
+  color: #fff;
+}
+.btn-dark:hover:not(:disabled) {
+  background: #000;
+}
+.btn-ghost {
   background: #fff;
+  color: var(--ink);
   border: 1px solid var(--line);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -16px rgba(15, 23, 42, 0.12);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--canvas);
+  border-color: rgba(12, 13, 17, 0.16);
+}
+.btn-danger {
+  background: var(--color-rose-50);
+  color: var(--color-rose-700);
+  border: 1px solid var(--color-rose-200);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-rose-100);
+}
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.75rem;
+}
+.btn-lg {
+  padding: 0.9rem 1.85rem;
+  font-size: 1rem;
 }
 
-.cap-label {
+/* surfaces */
+.card-surface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(12, 13, 17, 0.04), 0 12px 32px -20px rgba(12, 13, 17, 0.14);
+}
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(12, 13, 17, 0.04);
+  min-width: 0;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.stat-tile:hover {
+  border-color: rgba(12, 13, 17, 0.14);
+}
+
+.hairline {
+  border-color: var(--line);
+}
+
+/* labels + fields */
+.cap-label,
+.eyebrow {
   display: block;
+  margin-bottom: 0.35rem;
+}
+.cap-label {
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 0.35rem;
 }
 
 .field-base {
   width: 100%;
-  border-radius: 0.6rem;
-  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  border: 1px solid var(--color-slate-300);
   background: #fff;
-  padding: 0.55rem 0.75rem;
+  padding: 0.6rem 0.8rem;
   font-size: 0.875rem;
   color: var(--ink);
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+.field-base::placeholder {
+  color: var(--faint);
+}
 .field-base:focus {
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(46, 81, 240, 0.16);
 }
 
+/* chips + badges */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
   border-radius: 9999px;
-  padding: 0.25rem 0.7rem;
+  padding: 0.28rem 0.7rem;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
 
-.stat-tile {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  padding: 1.15rem 1.25rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  min-width: 0;
-}
-
+/* nav */
 .nav-link {
   border-radius: 9999px;
   padding: 0.4rem 0.9rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #4b5563;
+  color: var(--muted);
   transition: background 0.15s ease, color 0.15s ease;
   white-space: nowrap;
 }
-.nav-link:hover { background: rgba(0, 0, 0, 0.05); color: var(--ink); }
+.nav-link:hover {
+  background: rgba(12, 13, 17, 0.05);
+  color: var(--ink);
+}
 
 /* tables collapse to stacked cards on small screens */
-.table-stack { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-stack {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 @media (max-width: 720px) {
-  .table-collapse-sm thead { display: none; }
-  .table-collapse-sm tr { display: block; border-top: 1px solid var(--line); padding: 0.35rem 0; }
-  .table-collapse-sm td { display: block; border: 0 !important; padding: 0.25rem 1rem !important; text-align: left !important; }
-  .table-collapse-sm td::before { content: attr(data-label); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 2px; }
+  .table-collapse-sm thead {
+    display: none;
+  }
+  .table-collapse-sm tr {
+    display: block;
+    border-top: 1px solid var(--line);
+    padding: 0.35rem 0;
+  }
+  .table-collapse-sm td {
+    display: block;
+    border: 0 !important;
+    padding: 0.25rem 1rem !important;
+    text-align: left !important;
+  }
+  .table-collapse-sm td::before {
+    content: attr(data-label);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    display: block;
+    margin-bottom: 2px;
+  }
 }

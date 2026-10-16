@@ -40,8 +40,8 @@ export default function WalletDeposit({ balanceCents }: { balanceCents: number }
   }
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-base font-bold text-slate-900">Add funds</h2>
+    <section className="card-surface p-5">
+      <h2 className="text-base font-semibold text-slate-900">Add funds</h2>
       <p className="mt-1 text-xs text-slate-500">
         Paid in crypto through NOWPayments. Minimum deposit {formatCents(MIN_CENTS)}.
       </p>
@@ -65,7 +65,7 @@ export default function WalletDeposit({ balanceCents }: { balanceCents: number }
             onClick={() => setAmountCents(c)}
             className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
               amountCents === c
-                ? "bg-[#1d1d1f] text-white"
+                ? "bg-[#16171c] text-white"
                 : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
             }`}
           >
@@ -78,7 +78,7 @@ export default function WalletDeposit({ balanceCents }: { balanceCents: number }
           step="1"
           value={amountCents / 100}
           onChange={(e) => setAmountCents(Math.max(0, Math.round(Number(e.target.value) * 100)))}
-          className="w-32 rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none focus:border-[#0071e3]"
+          className="w-32 rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none focus:border-[#2e51f0]"
         />
       </div>
 
@@ -86,7 +86,7 @@ export default function WalletDeposit({ balanceCents }: { balanceCents: number }
         type="button"
         disabled={busy || amountCents < MIN_CENTS}
         onClick={() => void startDeposit()}
-        className="mt-4 rounded-full bg-[#0071e3] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-4 btn btn-primary disabled:cursor-not-allowed"
       >
         {busy ? "Opening checkout…" : `Deposit ${formatCents(Math.max(amountCents, MIN_CENTS))}`}
       </button>

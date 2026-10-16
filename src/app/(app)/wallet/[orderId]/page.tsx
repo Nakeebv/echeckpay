@@ -72,9 +72,9 @@ export default async function DepositStatusPage({
 
   return (
     <div className="mx-auto max-w-xl">
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="card-surface p-6">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">{view.label}</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-slate-900">{view.label}</h1>
           <span
             className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${view.tone}`}
           >
@@ -117,7 +117,7 @@ export default async function DepositStatusPage({
         <div className="mt-5">
           <Link
             href="/wallet"
-            className="rounded-full bg-[#0071e3] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0077ed]"
+            className="btn btn-primary"
           >
             Back to wallet
           </Link>

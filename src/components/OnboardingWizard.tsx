@@ -10,7 +10,7 @@ type Props = {
 };
 
 const inputCls =
-  "w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20";
+  "field-base";
 
 export default function OnboardingWizard({ email, prefilled, errorText }: Props) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -26,16 +26,16 @@ export default function OnboardingWizard({ email, prefilled, errorText }: Props)
 
   const stepCls = (n: number) =>
     `flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
-      step >= n ? "bg-[#1d1d1f] text-white" : "bg-slate-200 text-slate-500"
+      step >= n ? "bg-[#16171c] text-white" : "bg-slate-200 text-slate-500"
     }`;
 
   return (
     <div className="card-surface p-6 sm:p-8">
       <div className="mb-6 flex items-center justify-center gap-2">
         <div className={stepCls(1)}>1</div>
-        <div className={`h-0.5 w-10 ${step >= 2 ? "bg-[#1d1d1f]" : "bg-slate-200"}`} />
+        <div className={`h-0.5 w-10 ${step >= 2 ? "bg-[#16171c]" : "bg-slate-200"}`} />
         <div className={stepCls(2)} style={step < 2 ? { backgroundColor: "#e2e8f0", color: "#64748b" } : undefined}>2</div>
-        <div className={`h-0.5 w-10 ${step >= 3 ? "bg-[#1d1d1f]" : "bg-slate-200"}`} />
+        <div className={`h-0.5 w-10 ${step >= 3 ? "bg-[#16171c]" : "bg-slate-200"}`} />
         <div className={stepCls(3)}>3</div>
       </div>
 
@@ -53,7 +53,7 @@ export default function OnboardingWizard({ email, prefilled, errorText }: Props)
 
         {/* STEP 1 — personal details */}
         <div className={step === 1 ? "block" : "hidden"}>
-          <h1 className="text-xl font-bold tracking-tight text-[#1d1d1f]">Welcome — add your details</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-[#16171c]">Welcome — add your details</h1>
           <p className="mt-1 text-sm text-slate-600">
             These print on every check you write, as the account holder.
           </p>
@@ -84,7 +84,7 @@ export default function OnboardingWizard({ email, prefilled, errorText }: Props)
 
         {/* STEP 2 — company or personal */}
         <div className={step === 2 ? "block" : "hidden"}>
-          <h1 className="text-xl font-bold tracking-tight text-[#1d1d1f]">Who writes the checks?</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-[#16171c]">Who writes the checks?</h1>
           <p className="mt-1 text-sm text-slate-600">
             This decides the check size and the MICR layout your bank expects.
           </p>
@@ -101,11 +101,11 @@ export default function OnboardingWizard({ email, prefilled, errorText }: Props)
                 onClick={() => { setType(c.id); setStep(3); }}
                 className={`rounded-xl border p-4 text-left transition ${
                   type === c.id
-                    ? "border-[#0071e3] bg-blue-50/60 ring-2 ring-[#0071e3]/15"
+                    ? "border-[#2e51f0] bg-blue-50/60 ring-2 ring-[#2e51f0]/15"
                     : "border-slate-200 bg-white hover:border-slate-300"
                 }`}
               >
-                <div className="text-sm font-semibold text-[#1d1d1f]">{c.title}</div>
+                <div className="text-sm font-semibold text-[#16171c]">{c.title}</div>
                 <div className="mt-1 text-xs leading-snug text-slate-500">{c.body}</div>
               </button>
             ))}
@@ -117,7 +117,7 @@ export default function OnboardingWizard({ email, prefilled, errorText }: Props)
 
         {/* STEP 3 — bank account */}
         <div className={step === 3 ? "block" : "hidden"}>
-          <h1 className="text-xl font-bold tracking-tight text-[#1d1d1f]">Add your bank</h1>
+          <h1 className="text-xl font-semibold tracking-tight text-[#16171c]">Add your bank</h1>
           <p className="mt-1 text-sm text-slate-600">
             Copy the routing and account number from the bottom of an existing check.{" "}
             {type === "personal" ? "Personal checks will use the 6\" wallet format." : "Business checks will use the 8½\" voucher format."}

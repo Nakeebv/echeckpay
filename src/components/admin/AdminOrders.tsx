@@ -40,7 +40,7 @@ export default function AdminOrders({ orders }: { orders: AdminOrder[] }) {
       {note ? (
         <p className="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">{note}</p>
       ) : null}
-      <div className="table-stack overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+      <div className="table-stack overflow-hidden card-surface">
         <table className="w-full min-w-[640px] text-sm table-collapse-sm">
           <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wider text-slate-500">
             <tr>

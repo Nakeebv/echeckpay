@@ -119,7 +119,7 @@ export default function CheckDetail({
               <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 {accountLabel}
               </div>
-              <h1 className="mt-0.5 text-2xl font-bold tracking-tight text-slate-900">
+              <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-900">
                 Check #{check.checkNumber}
               </h1>
               <div className="mt-1 text-sm text-slate-600">
@@ -233,7 +233,7 @@ export default function CheckDetail({
                   setPrintBusy(false);
                 }
               }}
-              className="rounded-full bg-[#0071e3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:opacity-50"
+              className="rounded-full bg-[#2e51f0] px-4 py-2.5 text-sm font-semibold text-white  disabled:opacity-50"
             >
               {printBusy ? "Processing…" : wasPrinted ? "Reprint (locked) — $10" : `Print — $10`}
             </button>
@@ -355,7 +355,7 @@ export default function CheckDetail({
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-base font-bold text-slate-900">History</h2>
+          <h2 className="text-base font-semibold text-slate-900">History</h2>
           <p className="mt-0.5 text-xs text-slate-500">
             A permanent record of everything that happened to this check.
           </p>

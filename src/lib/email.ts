@@ -42,7 +42,7 @@ export function verifyEmailHtml(link: string): string {
   <h2 style="font-family:sans-serif">Confirm your eCheckPay email</h2>
   <p style="font-family:sans-serif">Tap the button below to confirm this address. You only need this
   if you ever forget your password.</p>
-  <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#0071e3;color:#fff;border-radius:8px;font-family:sans-serif;text-decoration:none">Confirm email</a></p>
+  <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#2e51f0;color:#fff;border-radius:8px;font-family:sans-serif;text-decoration:none">Confirm email</a></p>
   <p style="font-family:sans-serif;color:#6b7280;font-size:12px">This link expires in 48 hours.</p>`;
 }
 
@@ -50,6 +50,6 @@ export function resetEmailHtml(link: string): string {
   return `
   <h2 style="font-family:sans-serif">Reset your eCheckPay password</h2>
   <p style="font-family:sans-serif">Tap the button below to choose a new password.</p>
-  <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#0071e3;color:#fff;border-radius:8px;font-family:sans-serif;text-decoration:none">Reset password</a></p>
+  <p><a href="${link}" style="display:inline-block;padding:10px 18px;background:#2e51f0;color:#fff;border-radius:8px;font-family:sans-serif;text-decoration:none">Reset password</a></p>
   <p style="font-family:sans-serif;color:#6b7280;font-size:12px">This link expires in 60 minutes and can be used once.</p>`;
 }

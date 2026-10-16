@@ -38,7 +38,7 @@ export default function MobileNav({ isAdmin }: { isAdmin: boolean }) {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="block border-b border-black/5 px-4 py-3 text-sm font-medium text-[#1d1d1f] last:border-0 hover:bg-[#f5f5f7]"
+                className="block border-b border-black/5 px-4 py-3 text-sm font-medium text-[#16171c] last:border-0 hover:bg-[#f7f7f8]"
               >
                 {l.label}
               </Link>

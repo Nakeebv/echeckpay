@@ -31,12 +31,12 @@ export default async function WalletPage() {
     <div className="space-y-8">
       <section className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Wallet</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Wallet</h1>
           <p className="mt-1 text-sm text-slate-600">
             Balance funds printing — each printed check costs $10.00.
           </p>
         </div>
-        <div className="rounded-2xl bg-[#1d1d1f] px-6 py-4 text-white">
+        <div className="rounded-2xl bg-[#16171c] px-6 py-4 text-white">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-white/60">
             Available balance
           </div>
@@ -47,12 +47,12 @@ export default async function WalletPage() {
       <WalletDeposit balanceCents={user.balanceCents} />
 
       <section>
-        <h2 className="mb-3 text-lg font-bold tracking-tight text-slate-900">Recent deposits</h2>
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold tracking-tight text-slate-900">Recent deposits</h2>
+        <div className="card-surface table-stack overflow-hidden">
           {orders.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-slate-500">No deposits yet.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[420px] text-sm">
               <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wider text-slate-500">
                 <tr>
                   <th className="px-4 py-2.5">Order</th>
@@ -76,7 +76,7 @@ export default async function WalletPage() {
                       </span>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <Link href={`/wallet/${o.id}`} className="text-[11px] font-semibold text-[#0071e3] hover:underline">
+                      <Link href={`/wallet/${o.id}`} className="text-[11px] font-semibold text-[#2e51f0] hover:underline">
                         View
                       </Link>
                     </td>
@@ -89,12 +89,12 @@ export default async function WalletPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 text-lg font-bold tracking-tight text-slate-900">Ledger</h2>
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold tracking-tight text-slate-900">Ledger</h2>
+        <div className="card-surface table-stack overflow-hidden">
           {ledger.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-slate-500">No transactions yet.</p>
           ) : (
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[420px] text-sm">
               <tbody className="divide-y divide-slate-100">
                 {ledger.map((l) => (
                   <tr key={l.id}>

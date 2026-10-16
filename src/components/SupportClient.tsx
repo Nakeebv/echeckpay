@@ -62,27 +62,27 @@ export default function SupportClient() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900">New message</h2>
+      <section className="card-surface p-5">
+        <h2 className="text-base font-semibold text-slate-900">New message</h2>
         {notice ? <p className="mt-2 text-xs font-semibold text-emerald-700">{notice}</p> : null}
         <div className="mt-3 space-y-3">
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Subject"
-            className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none focus:border-[#0071e3]"
+            className="field-base"
           />
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             placeholder="Describe the issue or question…"
-            className="h-24 w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none focus:border-[#0071e3]"
+            className="h-24 field-base"
           />
           <button
             type="button"
             disabled={busy}
             onClick={() => void submitThread()}
-            className="rounded-full bg-[#0071e3] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:opacity-50"
+            className="btn btn-primary disabled:opacity-50"
           >
             Send to operators
           </button>
@@ -90,14 +90,14 @@ export default function SupportClient() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-bold text-slate-900">Your conversations</h2>
+        <h2 className="text-base font-semibold text-slate-900">Your conversations</h2>
         {threads.length === 0 ? (
-          <p className="rounded-xl border border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500 shadow-sm">
+          <p className="card-surface px-4 py-6 text-center text-sm text-slate-500">
             Nothing yet — open a request above.
           </p>
         ) : (
           threads.map((t) => (
-            <div key={t.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div key={t.id} className="card-surface p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-slate-800">{t.subject}</div>
@@ -118,13 +118,13 @@ export default function SupportClient() {
                   <textarea
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
-                    className="h-20 w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm outline-none focus:border-[#0071e3]"
+                    className="field-base h-20"
                   />
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => void submitReply(t.id)}
-                    className="rounded-full bg-[#0071e3] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#0077ed] disabled:opacity-50"
+                    className="btn btn-primary btn-sm disabled:opacity-50"
                   >
                     Send reply
                   </button>

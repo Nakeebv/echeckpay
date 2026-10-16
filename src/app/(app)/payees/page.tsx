@@ -23,7 +23,7 @@ export default async function PayeesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Payees</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Payees</h1>
         <p className="mt-1 max-w-3xl text-sm text-slate-600">
           Saved payees fill in automatically when you write a check — faster and typo-free.
         </p>

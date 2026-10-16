@@ -16,11 +16,11 @@ export default async function LoginPage({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm card-surface p-8">
         <div className="flex items-center gap-2">
-          <span className="text-lg font-bold tracking-tight">eCheckPay</span>
+          <span className="text-lg font-semibold tracking-tight">eCheckPay</span>
         </div>
-        <h1 className="mt-6 text-xl font-bold tracking-tight text-slate-900">Sign in</h1>
+        <h1 className="mt-6 text-xl font-semibold tracking-tight text-slate-900">Sign in</h1>
         <p className="mt-1 text-sm text-slate-600">
           Access your account with your email and password.
         </p>
@@ -57,7 +57,7 @@ export default async function LoginPage({
               name="email"
               required
               autoComplete="email"
-              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20"
+              className="field-base"
             />
           </label>
           <label className="block">
@@ -69,21 +69,21 @@ export default async function LoginPage({
               name="password"
               required
               autoComplete="current-password"
-              className="w-full rounded-md border border-slate-300 bg-white px-2.5 py-2 text-sm shadow-sm outline-none transition focus:border-[#0071e3] focus:ring-2 focus:ring-[#0071e3]/20"
+              className="field-base"
             />
           </label>
           <button
             type="submit"
-            className="w-full rounded-full bg-[#0071e3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed]"
+            className="btn btn-primary w-full"
           >
             Sign in
           </button>
         </form>
         <div className="mt-4 flex items-center justify-between text-xs">
-          <a href="/forgot" className="font-semibold text-[#0071e3] hover:underline">
+          <a href="/forgot" className="font-semibold text-[#2e51f0] hover:underline">
             Forgot password?
           </a>
-          <a href="/register" className="font-semibold text-[#0071e3] hover:underline">
+          <a href="/register" className="font-semibold text-[#2e51f0] hover:underline">
             Create account
           </a>
         </div>

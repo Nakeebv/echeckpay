@@ -53,7 +53,7 @@ export function CompliancePanel({ result }: { result: ComplianceResult }) {
           </span>
         </div>
         <div className="min-w-0">
-          <div className="text-sm font-bold text-slate-900">
+          <div className="text-sm font-semibold text-slate-900">
             Bank-acceptance score {result.score}/100
           </div>
           <div className="mt-0.5 flex flex-wrap gap-1.5">

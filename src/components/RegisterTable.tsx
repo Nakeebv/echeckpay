@@ -299,7 +299,7 @@ export default function RegisterTable({
             {filtered.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-10 text-center text-slate-500">
-                  No checks here yet — <Link className="font-semibold text-[#0071e3]" href="/write">write one</Link>.
+                  No checks here yet — <Link className="font-semibold text-[#2e51f0]" href="/write">write one</Link>.
                 </td>
               </tr>
             ) : null}
