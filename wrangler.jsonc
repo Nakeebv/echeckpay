@@ -4,6 +4,11 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],
+  // Run the Worker in the data center closest to the database (probed over
+  // TCP). This app is DB-bound: every page makes several round trips, so
+  // collapsing the Worker→DB distance beats edge locality. Free on all plans.
+  // (mode "smart" only inspects fetch() subrequests, so it stayed local.)
+  "placement": { "host": "aws-0-eu-north-1.pooler.supabase.com:5432" },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
