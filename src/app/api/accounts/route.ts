@@ -5,11 +5,27 @@ import { bankAccounts, checks } from "@/db/schema";
 import { getOwnedAccount, listAccounts, logEvent } from "@/lib/data";
 import { isRoutingValid } from "@/lib/micr";
 import { sanitizeDataUrl } from "@/lib/datasafe";
+import { isValidOwnedRef } from "@/lib/filestore";
 import { requireApiUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 type Payload = Record<string, unknown>;
+
+/** Accept a legacy data URL or an owned R2 file reference. */
+async function acceptAsset(
+  userId: number,
+  value: unknown,
+  kind: "image" | "font",
+  limit: number,
+): Promise<string | null | "invalid_ref"> {
+  if (typeof value !== "string" || value === "") return null;
+  if (value.startsWith("r2:")) {
+    return (await isValidOwnedRef(userId, value)) ? value : "invalid_ref";
+  }
+  const clean = sanitizeDataUrl(value, kind, limit);
+  return clean || "invalid_ref";
+}
 
 function str(v: unknown, fallback = ""): string {
   return typeof v === "string" ? v : fallback;
@@ -42,20 +58,20 @@ export async function POST(request: Request) {
   if (account.replace(/\s/g, "").length < 4) errors.push("Account number must be at least 4 digits.");
   if (errors.length) return NextResponse.json({ errors }, { status: 400 });
 
-  const logo = sanitizeDataUrl(body.logoDataUrl, "image", 400_000);
-  const signature = sanitizeDataUrl(body.signatureDataUrl, "image", 400_000);
-  const companyLogo = sanitizeDataUrl(body.companyLogoDataUrl, "image", 400_000);
-  const micrFont = sanitizeDataUrl(body.micrFontDataUrl, "font", 2_000_000);
-  if (body.logoDataUrl && !logo) {
+  const logo = await acceptAsset(auth.user.id, body.logoDataUrl, "image", 400_000);
+  const signature = await acceptAsset(auth.user.id, body.signatureDataUrl, "image", 400_000);
+  const companyLogo = await acceptAsset(auth.user.id, body.companyLogoDataUrl, "image", 400_000);
+  const micrFont = await acceptAsset(auth.user.id, body.micrFontDataUrl, "font", 2_000_000);
+  if (logo === "invalid_ref") {
     return NextResponse.json({ errors: ["Bank logo must be a PNG/JPEG/WebP/SVG data URL ≤ 400 KB."] }, { status: 400 });
   }
-  if (body.companyLogoDataUrl && !companyLogo) {
+  if (companyLogo === "invalid_ref") {
     return NextResponse.json({ errors: ["Company logo must be a PNG/JPEG/WebP/SVG data URL ≤ 400 KB."] }, { status: 400 });
   }
-  if (body.signatureDataUrl && !signature) {
+  if (signature === "invalid_ref") {
     return NextResponse.json({ errors: ["Signature must be a PNG/JPEG data URL ≤ 400 KB."] }, { status: 400 });
   }
-  if (body.micrFontDataUrl && !micrFont) {
+  if (micrFont === "invalid_ref") {
     return NextResponse.json({ errors: ["Font must be a TTF/OTF/WOFF/WOFF2 data URL ≤ 2 MB."] }, { status: 400 });
   }
 
@@ -160,9 +176,9 @@ export async function PATCH(request: Request) {
   }
   if ("logoDataUrl" in body) {
     if (body.logoDataUrl) {
-      const clean = sanitizeDataUrl(body.logoDataUrl, "image", 400_000);
-      if (!clean) {
-        return NextResponse.json({ errors: ["Bank logo must be a PNG/JPEG/WebP/SVG data URL ≤ 400 KB."] }, { status: 400 });
+      const clean = await acceptAsset(auth.user.id, body.logoDataUrl, "image", 400_000);
+      if (clean === "invalid_ref" || !clean) {
+        return NextResponse.json({ errors: ["Bank logo must be a PNG/JPEG/WebP/SVG file ≤ 400 KB."] }, { status: 415 });
       }
       patch.logoDataUrl = clean;
     } else {
@@ -175,9 +191,9 @@ export async function PATCH(request: Request) {
   }
   if ("companyLogoDataUrl" in body) {
     if (body.companyLogoDataUrl) {
-      const clean = sanitizeDataUrl(body.companyLogoDataUrl, "image", 400_000);
-      if (!clean) {
-        return NextResponse.json({ errors: ["Company logo must be a PNG/JPEG/WebP/SVG data URL ≤ 400 KB."] }, { status: 400 });
+      const clean = await acceptAsset(auth.user.id, body.companyLogoDataUrl, "image", 400_000);
+      if (clean === "invalid_ref" || !clean) {
+        return NextResponse.json({ errors: ["Company logo must be a PNG/JPEG/WebP/SVG file ≤ 400 KB."] }, { status: 415 });
       }
       patch.companyLogoDataUrl = clean;
     } else {
@@ -190,9 +206,9 @@ export async function PATCH(request: Request) {
   }
   if ("signatureDataUrl" in body) {
     if (body.signatureDataUrl) {
-      const clean = sanitizeDataUrl(body.signatureDataUrl, "image", 400_000);
-      if (!clean) {
-        return NextResponse.json({ errors: ["Signature must be a PNG/JPEG data URL ≤ 400 KB."] }, { status: 400 });
+      const clean = await acceptAsset(auth.user.id, body.signatureDataUrl, "image", 400_000);
+      if (clean === "invalid_ref" || !clean) {
+        return NextResponse.json({ errors: ["Signature must be a PNG/JPEG file ≤ 400 KB."] }, { status: 415 });
       }
       patch.signatureDataUrl = clean;
     } else {
@@ -201,9 +217,9 @@ export async function PATCH(request: Request) {
   }
   if ("micrFontDataUrl" in body) {
     if (body.micrFontDataUrl) {
-      const clean = sanitizeDataUrl(body.micrFontDataUrl, "font", 2_000_000);
-      if (!clean) {
-        return NextResponse.json({ errors: ["Font must be a TTF/OTF/WOFF/WOFF2 data URL ≤ 2 MB."] }, { status: 400 });
+      const clean = await acceptAsset(auth.user.id, body.micrFontDataUrl, "font", 2_000_000);
+      if (clean === "invalid_ref" || !clean) {
+        return NextResponse.json({ errors: ["Font must be a TTF/OTF/WOFF/WOFF2 file ≤ 2 MB."] }, { status: 415 });
       }
       patch.micrFontDataUrl = clean;
     } else {

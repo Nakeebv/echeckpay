@@ -238,6 +238,11 @@ async function seedAll(db: Tx, userId: number): Promise<void> {
     );
 }
 
+/** Resolve stored logo/signature/font references to authorized URLs. */
+function resolveRef(ref: string): string {
+  return ref.startsWith("r2:") ? `/api/files/${ref.slice(3)}` : ref;
+}
+
 export function toAccountView<T extends {
   holderName: string;
   holderAddress: string;
@@ -271,11 +276,11 @@ export function toAccountView<T extends {
     accountNumber: a.accountNumber,
     fraction: a.fraction,
     onUsFormat: a.onUsFormat,
-    logoDataUrl: a.logoDataUrl,
+    logoDataUrl: a.logoDataUrl ? resolveRef(a.logoDataUrl) : a.logoDataUrl,
     bankLogoWidthIn: a.bankLogoWidthIn,
-    companyLogoDataUrl: a.companyLogoDataUrl,
+    companyLogoDataUrl: a.companyLogoDataUrl ? resolveRef(a.companyLogoDataUrl) : a.companyLogoDataUrl,
     companyLogoWidthIn: a.companyLogoWidthIn,
-    signatureDataUrl: a.signatureDataUrl,
+    signatureDataUrl: a.signatureDataUrl ? resolveRef(a.signatureDataUrl) : a.signatureDataUrl,
     signatureText: a.signatureText,
     signatureTitle: a.signatureTitle,
     accountClass: a.accountClass,

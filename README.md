@@ -117,3 +117,28 @@ npx wrangler secret put APP_BASE_URL          # e.g. https://echeckpay.nakeebv.w
 Resend (free tier): create API key → `wrangler secret put RESEND_API_KEY`.
 Without it, registration/dev flows display verification links on-screen and
 password recovery falls back to admin-issued reset links.
+
+## File storage (Cloudflare R2)
+
+Uploads (bank logo, company logo, signature, MICR font, check PDFs) are stored
+in R2 with a metadata row in the `files` table. Private by default; downloads
+flow through `/api/files/[id]` after an ownership check. Object keys are
+server-generated UUIDs — client filenames are metadata only.
+
+Setup (free tier):
+1. Cloudflare dashboard → R2 → create a bucket (e.g. `echeckpay-files`).
+2. R2 → Manage R2 API tokens → create an "Object Read & Write" token scoped to
+   the bucket → note Access Key ID, Secret Access Key and Account ID.
+3. Set as Worker secrets:
+
+   ```sh
+   npx wrangler secret put R2_ACCOUNT_ID
+   npx wrangler secret put R2_ACCESS_KEY_ID
+   npx wrangler secret put R2_SECRET_ACCESS_KEY
+   npx wrangler secret put R2_BUCKET
+   ```
+
+Until configured, uploads fall back to inline database storage (400 KB images
+/ 2 MB fonts) — feature-complete but not the long-term home for files.
+Admin cleanup sweep: `POST /api/admin/files/cleanup` (replaced + orphaned
+objects are deleted).

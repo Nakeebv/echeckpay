@@ -134,6 +134,29 @@ export const supportMessages = pgTable("support_messages", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Object-storage index. One row per stored file; the object key is
+ * unpredictable and the row is the only path to authorisation.
+ */
+export const files = pgTable(
+  "files",
+  {
+    id: text("id").primaryKey(),
+    ownerUserId: integer("owner_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    category: text("category").notNull(),
+    accessLevel: text("access_level").notNull().default("private"), // private | public
+    originalName: text("original_name").notNull().default(""),
+    mime: text("mime").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    objectKey: text("object_key").notNull().unique(),
+    status: text("status").notNull().default("active"), // active | replaced | deleted
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("files_owner_idx").on(t.ownerUserId)],
+);
+
 /** one-time tokens that unlock the clean (non-watermarked) print view. */
 export const printTokens = pgTable(
   "print_tokens",

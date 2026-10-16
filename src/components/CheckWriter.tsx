@@ -264,11 +264,11 @@ export default function CheckWriter({
       // strictly manual: only an operator-entered fraction is ever printed
       fraction: account?.fraction || "",
       onUsFormat: account?.onUsFormat ?? "account-symbol-serial",
-      logoDataUrl: account?.logoDataUrl ?? null,
+      logoDataUrl: account?.logoDataUrl ? account.logoDataUrl.replace(/^r2:(.+)$/, "/api/files/$1") : null,
       bankLogoWidthIn: bankLogoW,
-      companyLogoDataUrl: account?.companyLogoDataUrl ?? null,
+      companyLogoDataUrl: account?.companyLogoDataUrl ? account.companyLogoDataUrl.replace(/^r2:(.+)$/, "/api/files/$1") : null,
       companyLogoWidthIn: companyLogoW,
-      signatureDataUrl: account?.signatureDataUrl ?? null,
+      signatureDataUrl: account?.signatureDataUrl ? account.signatureDataUrl.replace(/^r2:(.+)$/, "/api/files/$1") : null,
       signatureText: account?.signatureText ?? "",
       signatureTitle: account?.signatureTitle ?? "Authorized Signature",
       accountClass: account?.accountClass ?? "business",
@@ -345,11 +345,27 @@ export default function CheckWriter({
       setError("Image is too large — use a PNG/JPG under 400 KB.");
       return;
     }
-    const dataUrl = await readFile(file);
+    // store in R2 (owner-checked object, metadata row), then reference it
+    const category = field === "logoDataUrl" ? "logo_bank" : field === "companyLogoDataUrl" ? "logo_company" : "signature";
+    const form = new FormData();
+    form.append("category", category);
+    form.append("file", file);
+    const up = await fetch("/api/files", { method: "POST", body: form });
+    const upData = (await up.json()) as { file?: { id: string }; errors?: string[]; code?: string };
+    let value: string;
+    if (up.ok && upData.file) {
+      value = `r2:${upData.file.id}`;
+    } else if (upData.code === "r2_unavailable") {
+      // R2 not configured yet — fall back to inline data-URL storage
+      value = await readFile(file);
+    } else {
+      setError((upData.errors ?? ["Upload failed."]).join(" "));
+      return;
+    }
     await fetch("/api/accounts", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id: account.id, [field]: dataUrl }),
+      body: JSON.stringify({ id: account.id, [field]: value }),
     });
     if (field === "signatureDataUrl") setSignatureMode("image");
     setNotice(

@@ -26,12 +26,7 @@ export async function POST(request: Request) {
   if ("error" in auth) return auth.error;
   const { user } = auth;
 
-  if (!NOWPAYMENTS_CONFIGURED) {
-    return NextResponse.json(
-      { errors: ["Deposits are temporarily unavailable — payment provider not configured."], code: "provider_unconfigured" },
-      { status: 503 },
-    );
-  }
+
 
   let body: { amountCents?: number };
   try {
@@ -41,6 +36,12 @@ export async function POST(request: Request) {
   }
 
   // strict integer math — never floats for money
+  if (!NOWPAYMENTS_CONFIGURED) {
+    return NextResponse.json(
+      { errors: ["Deposits are temporarily unavailable — payment provider not configured."], code: "provider_unconfigured" },
+      { status: 503 },
+    );
+  }
   const amountCents = Math.trunc(Number(body.amountCents));
   if (!Number.isFinite(amountCents) || amountCents < MIN_DEPOSIT_CENTS) {
     return NextResponse.json(
