@@ -1,7 +1,16 @@
 const fs = require("fs");
 const { createHmac } = require("crypto");
-const env = fs.readFileSync(".dev.vars", "utf8");
-const secret = /AUTH_SECRET=(.*)/.exec(env)[1].trim();
+const env = fs.existsSync(".dev.vars") ? fs.readFileSync(".dev.vars", "utf8") : "";
+const pick = (name) => {
+  const m = new RegExp(`^${name}=(.*)$`, "m").exec(env);
+  return (m ? m[1] : process.env[name] || "").trim().replace(/^["']|["']$/g, "");
+};
+const secret = pick("AUTH_SECRET");
+const databaseUrl = pick("DATABASE_URL");
+if (!secret || !databaseUrl) {
+  console.error("Missing AUTH_SECRET / DATABASE_URL (set them in .dev.vars or the environment).");
+  process.exit(1);
+}
 function token(userId) {
   const exp = Date.now() + 86400000;
   const payload = `${userId}|${exp}|sec`;
@@ -12,7 +21,7 @@ const { Pool } = require("pg");
 
 async function main() {
   const results = {};
-  const pool = new Pool({ connectionString: "postgresql://postgres.iwqjeptjvoxgobvmrlih:REDACTED-CREDENTIAL%23@aws-0-eu-north-1.pooler.supabase.com:5432/postgres?sslmode=disable", ssl: { rejectUnauthorized: false } });
+  const pool = new Pool({ connectionString: databaseUrl, ssl: { rejectUnauthorized: false } });
   await pool.query("insert into users (email, password_hash) values ('secuser@test.local', 'pbkdf2$60000$AAAA$BBBB') on conflict (email) do nothing");
   const u2 = await pool.query("select id from users where email='secuser@test.local'");
   const USER2_ID = u2.rows[0].id;

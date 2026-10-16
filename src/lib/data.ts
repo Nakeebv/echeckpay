@@ -77,8 +77,9 @@ async function runSeed(): Promise<number | null> {
           .insert(users)
           .values({
             email: (process.env.ADMIN_EMAIL?.trim().toLowerCase() || "owner@echeckpay.local"),
-            // preserves the operator's original password
-            passwordHash: await hashPassword(process.env.ADMIN_PASSWORD?.trim() || "REDACTED-CREDENTIAL#"),
+            // No hardcoded fallback: without ADMIN_PASSWORD the operator gets an
+            // unguessable random password and must recover/reset to sign in.
+            passwordHash: await hashPassword(process.env.ADMIN_PASSWORD?.trim() || `${crypto.randomUUID()}${crypto.randomUUID()}`),
             role: "admin",
             emailVerified: 1,
             balanceCents: 100_00, // operator starts with enough to print immediately
