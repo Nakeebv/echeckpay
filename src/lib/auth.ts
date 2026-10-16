@@ -128,15 +128,31 @@ export async function isAuthed(): Promise<boolean> {
   return (await currentUser()) !== null;
 }
 
-/** Resolve the session cookie to a live user row, or null. */
+/**
+ * Short-lived per-isolate cache. The layout resolves the user, then each page
+ * resolves it again — this collapses repeated lookups into one DB read every
+ * couple of seconds instead of one per render.
+ */
+const USER_CACHE_TTL_MS = 3_000;
+const userCache = new Map<number, { user: User | null; expiresAt: number }>();
+
 export async function currentUser(): Promise<User | null> {
   const jar = await cookies();
   const userId = verifySessionToken(jar.get(SESSION_COOKIE)?.value);
   if (userId === null) return null;
+
+  const cached = userCache.get(userId);
+  if (cached && cached.expiresAt > Date.now()) return cached.user;
+
   const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
-  const user = rows[0];
-  if (!user || user.status !== "active") return null;
-  return user;
+  const user = rows[0] ?? null;
+  const active = user && user.status === "active" ? user : null;
+
+  userCache.set(userId, { user: active, expiresAt: Date.now() + USER_CACHE_TTL_MS });
+  if (userCache.size > 500) {
+    for (const [k, v] of userCache) if (v.expiresAt <= Date.now()) userCache.delete(k);
+  }
+  return active;
 }
 
 export async function currentUserByToken(token: string | undefined | null): Promise<User | null> {

@@ -107,6 +107,13 @@ input[type="range"] {
   --line: rgba(0, 0, 0, 0.08);
 }
 
+/* interactive cursors (Tailwind v4 preflight resets them to default) */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+summary,
+label:has(> input[type="checkbox"]),
+a { cursor: pointer; }
+
 .btn {
   display: inline-flex;
   align-items: center;

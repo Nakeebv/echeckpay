@@ -526,31 +526,26 @@ export async function createCheck(input: CreateCheckInput, userId: number): Prom
 }
 
 export async function getStats(userId: number) {
-  await ensureSeeded();
-  const [accountCount] = await withRetry(() =>
-    db.select({ n: sql<number>`count(*)::int` }).from(bankAccounts).where(eq(bankAccounts.userId, userId)),
-  );
-  const [payeeCount] = await withRetry(() =>
-    db.select({ n: sql<number>`count(*)::int` }).from(payees).where(eq(payees.userId, userId)),
-  );
-  const [totals] = await withRetry(() =>
+  // one round trip — subselects instead of three parallel pooled connections
+  const [row] = await withRetry(() =>
     db
-    .select({
-      n: sql<number>`count(*)::int`,
-      outstanding: sql<number>`coalesce(sum(case when status in ('draft','printed','issued') then amount_cents else 0 end), 0)::int`,
-      cleared: sql<number>`coalesce(sum(case when status = 'cleared' then amount_cents else 0 end), 0)::int`,
-      voided: sql<number>`count(*) filter (where status in ('void','stopped'))::int`,
-    })
-    .from(checks)
-    .where(eq(checks.userId, userId)),
+      .select({
+        accounts: sql<number>`(select count(*)::int from bank_accounts where user_id = ${userId})`,
+        payees: sql<number>`(select count(*)::int from payees where user_id = ${userId})`,
+        checks: sql<number>`(select count(*)::int from checks where user_id = ${userId})`,
+        outstandingCents: sql<number>`(select coalesce(sum(case when status in ('draft','printed','issued') then amount_cents else 0 end), 0)::int from checks where user_id = ${userId})`,
+        clearedCents: sql<number>`(select coalesce(sum(case when status = 'cleared' then amount_cents else 0 end), 0)::int from checks where user_id = ${userId})`,
+        voided: sql<number>`(select count(*)::int from checks where user_id = ${userId} and status in ('void','stopped'))`,
+      })
+      .from(sql`(select 1) as t`),
   );
   return {
-    accounts: accountCount?.n ?? 0,
-    payees: payeeCount?.n ?? 0,
-    checks: totals?.n ?? 0,
-    outstandingCents: totals?.outstanding ?? 0,
-    clearedCents: totals?.cleared ?? 0,
-    voided: totals?.voided ?? 0,
+    accounts: row?.accounts ?? 0,
+    payees: row?.payees ?? 0,
+    checks: row?.checks ?? 0,
+    outstandingCents: row?.outstandingCents ?? 0,
+    clearedCents: row?.clearedCents ?? 0,
+    voided: row?.voided ?? 0,
   };
 }
 
