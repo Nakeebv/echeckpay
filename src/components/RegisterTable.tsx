@@ -223,7 +223,7 @@ export default function RegisterTable({
       ) : null}
 
       {/* this is a bulk-action affordance that keeps reconciliation honest */}
-      <Card className="overflow-x-auto">
+      <Card className="table-stack">
         <table className="w-full min-w-[860px] text-sm">
           <thead className="bg-slate-50 text-left text-[11px] uppercase tracking-wider text-slate-500">
             <tr>
@@ -248,12 +248,12 @@ export default function RegisterTable({
                     onChange={() => toggle(r.id)}
                   />
                 </td>
-                <td className="px-4 py-2.5 font-mono font-bold tabular-nums">
+                <td data-label="Check" className="px-4 py-2.5 font-mono font-bold tabular-nums">
                   <Link href={`/checks/${r.id}`} className="hover:underline">
                     {r.checkNumber}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5">
+                <td data-label="Payee" className="px-4 py-2.5">
                   <Link href={`/checks/${r.id}`} className="hover:underline">
                     {r.payeeName}
                   </Link>
@@ -261,11 +261,11 @@ export default function RegisterTable({
                     <div className="text-[11px] text-slate-500">{r.memo}</div>
                   ) : null}
                 </td>
-                <td className="px-4 py-2.5 text-right font-mono tabular-nums">
+                <td data-label="Amount" className="px-4 py-2.5 text-right font-mono tabular-nums">
                   {formatCents(r.amountCents)}
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{r.dateIssued}</td>
-                <td className="px-4 py-2.5 text-slate-500">····{r.accountNumber.slice(-4)}</td>
+                <td data-label="Date" className="px-4 py-2.5 text-slate-500">{r.dateIssued}</td>
+                <td data-label="Account" className="px-4 py-2.5 text-slate-500">····{r.accountNumber.slice(-4)}</td>
                 <td className="px-4 py-2.5">
                   <Badge
                     tone={

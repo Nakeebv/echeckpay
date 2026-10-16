@@ -6,8 +6,6 @@ export const metadata = {
   title: "eCheckPay — print checks banks accept",
 };
 
-const MICR = "U1306U T021000021T U1234567890U";
-
 const FEATURES = [
   {
     title: "Real bank MICR",
@@ -30,7 +28,7 @@ const FEATURES = [
   },
   {
     title: "Reviewed before printing",
-    body: "Every check is checked against the rules a bank applies — you can't accidentally print a check it will refuse.",
+    body: "Every check is graded against the rules a bank applies — you can't accidentally print something it would refuse.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <circle cx="12" cy="12" r="8.5" />
@@ -84,7 +82,7 @@ const STEPS = [
   {
     n: "3",
     title: "Print and file",
-    body: "Print on security paper with a laser printer, then send your bank the matching issue file.",
+    body: "Print on security paper with a laser printer, then send your bank the matching issue file. Each print is $10.",
   },
 ];
 
@@ -92,7 +90,7 @@ const SPEC = [
   { k: "True E-13B numbers", v: "Routing, account and check number drawn on the standard bank grid." },
   { k: "Clean bottom band", v: "The 5/8\u2033 machine-read strip stays free of any printing." },
   { k: "Amounts that agree", v: "The written amount always matches the numbers — words win the bank's reading." },
-  { k: "Front and back", v: "Security marks on the face; the required warning printed on the back." },
+  { k: "Front and back", v: "Security marks on the face; the required warning printed on the reverse." },
 ];
 
 const FAQ = [
@@ -105,24 +103,24 @@ const FAQ = [
     a: "A check printed to the bank standard with magnetic toner reads like any check your bank issued. If your bank publishes its own check spec, its format can be matched exactly.",
   },
   {
+    q: "What does it cost?",
+    a: "Deposits go into your wallet from $50 in crypto through NOWPayments. Every printed check — including reprints — costs $10, deducted from the wallet balance only when the print is confirmed.",
+  },
+  {
     q: "What is Positive Pay?",
     a: "A fraud service your bank offers: you send a list of checks you've written, and the bank automatically refuses any check that doesn't match — altered, copied or fake.",
   },
   {
     q: "Where does my banking data live?",
-    a: "On your own server, behind a single-operator password with signed sessions. Nothing is shared with a third-party service.",
+    a: "On your own server, behind password-protected accounts with signed sessions. Nothing is shared with a third-party service.",
   },
 ];
-
-function Bar({ w }: { w: string }) {
-  return <div className={`h-2 rounded-full bg-slate-200 ${w}`} />;
-}
 
 export default function WelcomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="px-6 pb-16 pt-16 text-center sm:pt-20">
+      <section className="overflow-hidden px-6 pb-10 pt-14 text-center sm:pt-20">
         <Link
           href="/#features"
           className="inline-flex items-center gap-2 rounded-full border border-black/5 bg-white px-3.5 py-1 text-xs font-medium text-[#6e6e73] shadow-sm"
@@ -136,63 +134,32 @@ export default function WelcomePage() {
           Written in minutes.
         </h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-[#6e6e73]">
-          Write, print and track checks from any computer — with real bank-standard account numbers,
-          built-in security features and one-click fraud protection.
+          Write, print and track checks from any computer — with real bank-standard account
+          numbers, built-in security features and one-click fraud protection.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
             href="/register"
-            className="rounded-full bg-[#0071e3] px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-[#0077ed]"
+            className="rounded-full bg-[#0071e3] px-6 py-3 text-[15px] font-semibold text-white shadow-sm transition hover:bg-[#0077ed]"
           >
             Get started
           </Link>
-          <Link
-            href="/#how"
-            className="text-[15px] font-medium text-[#0071e3] transition hover:underline"
-          >
-            See how it works →
+          <Link href="/login" className="text-[15px] font-medium text-[#0071e3] transition hover:underline">
+            Sign in →
           </Link>
         </div>
 
-        {/* Check mock — real E-13B font */}
-        <div className="mx-auto mt-14 max-w-xl">
-          <div className="doc-shadow overflow-hidden rounded-xl bg-white p-5 text-left">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 space-y-2">
-                <Bar w="w-24" />
-                <Bar w="w-32" />
-              </div>
-              <div className="w-24 flex-none rounded border border-slate-200 px-2 py-1.5">
-                <Bar w="w-full" />
-              </div>
-            </div>
-            <div className="mt-5 space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span className="hidden text-[11px] text-slate-400 sm:inline">PAY TO THE</span>
-                <Bar w="w-40" />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="hidden text-[11px] text-slate-400 sm:inline">ORDER OF</span>
-                <Bar w="w-40 sm:w-56" />
-                <span className="ml-auto text-[13px] font-semibold tabular-nums text-[#1d1d1f]">$1,250.00</span>
-              </div>
-            </div>
-            <div className="mt-5 flex items-end justify-between">
-              <Bar w="w-36" />
-              <span className="text-[11px] text-slate-400">/1306/</span>
-            </div>
-            <div className="mt-3 border-t border-dashed border-slate-300 pt-2">
-              <div
-                className="select-none whitespace-nowrap text-[8pt] leading-none text-[#1d1d1f] sm:text-[12pt]"
-                style={{ fontFamily: '"MICR E13B", monospace', maxWidth: "100%", overflow: "hidden" }}
-              >
-                {MICR}
-              </div>
-              <p className="mt-1.5 text-[10px] font-medium uppercase tracking-wider text-slate-400">
-                True E-13B · protected 5/8&Prime; clear band
-              </p>
-            </div>
-          </div>
+        {/* Hero product visual */}
+        <div className="relative mx-auto mt-14 max-w-4xl">
+          <div className="pointer-events-none absolute -inset-x-8 -top-10 bottom-16 bg-gradient-to-b from-[#0071e3]/10 via-transparent to-transparent blur-2xl" />
+          <img
+            src="/images/hero-check.png"
+            alt="An eCheckPay check with a true E-13B MICR line, ready to print"
+            className="doc-shadow relative mx-auto w-full max-w-3xl rounded-2xl"
+          />
+          <p className="mt-4 text-[11px] font-medium uppercase tracking-wider text-slate-400">
+            True E-13B · protected 5/8&Prime; clear band · printed from your browser
+          </p>
         </div>
 
         <p className="mt-10 font-mono text-[11px] tracking-wider text-[#86868b]">
@@ -212,10 +179,7 @@ export default function WelcomePage() {
           </p>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl bg-[#f5f5f7] p-6 transition hover:bg-[#ebebed]"
-              >
+              <div key={f.title} className="rounded-2xl bg-[#f5f5f7] p-6 transition hover:bg-[#ebebed]">
                 <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-[#0071e3] shadow-sm">
                   {f.icon}
                 </span>
@@ -225,6 +189,27 @@ export default function WelcomePage() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* Product strip */}
+      <section className="bg-white px-6 pb-20">
+        <div className="mx-auto grid max-w-5xl gap-6 text-center sm:grid-cols-3">
+          <div className="rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
+            <div className="text-2xl font-bold text-[#1d1d1f]">$10</div>
+            <p className="mt-1 text-sm text-[#6e6e73]">per printed check — reprints included, charged only on confirmed print</p>
+          </div>
+          <div className="rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
+            <div className="text-2xl font-bold text-[#1d1d1f]">$50</div>
+            <p className="mt-1 text-sm text-[#6e6e73]">minimum wallet deposit in crypto — funds land in your balance</p>
+          </div>
+          <div className="rounded-2xl border border-black/5 bg-[#f5f5f7] p-6">
+            <div className="text-2xl font-bold text-[#1d1d1f]">0</div>
+            <p className="mt-1 text-sm text-[#6e6e73]">data shared with third parties — accounts, payees and checks stay on your server</p>
+          </div>
+        </div>
+        <p className="mt-8 text-center text-sm text-[#6e6e73]">
+          A full wallet, history and compliance engine behind a two-minute learning curve.
+        </p>
       </section>
 
       {/* How it works */}
@@ -247,24 +232,32 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      {/* Spec (dark) */}
-      <section className="bg-[#1d1d1f] px-6 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-3xl font-semibold tracking-tight sm:text-4xl">
-            Bank-grade by design.
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-base leading-relaxed text-[#a1a1a6]">
-            The same document geometry the major check printers build to — enforced by the software,
-            not left to chance.
-          </p>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {SPEC.map((s) => (
-              <div key={s.k}>
-                <h3 className="text-sm font-semibold text-white">{s.k}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-[#a1a1a6]">{s.v}</p>
-              </div>
-            ))}
+      {/* Security (dark, imagery) */}
+      <section id="security" className="overflow-hidden bg-[#1d1d1f] px-6 py-20 text-white">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              Security that lives on the paper.
+            </h2>
+            <p className="mt-4 text-base leading-relaxed text-[#a1a1a6]">
+              The anti-counterfeit stack is printed by the software, not bolted on — microprint
+              borders, the padlock mark, tamper-evident chemistry and the rear disclosure clause
+              your bank expects to find.
+            </p>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              {SPEC.map((s) => (
+                <div key={s.k}>
+                  <h3 className="text-sm font-semibold text-white">{s.k}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-[#a1a1a6]">{s.v}</p>
+                </div>
+              ))}
+            </div>
           </div>
+          <img
+            src="/images/security.png"
+            alt="Security details printed on every eCheckPay check"
+            className="w-full rounded-2xl shadow-2xl"
+          />
         </div>
       </section>
 
@@ -293,6 +286,9 @@ export default function WelcomePage() {
         <h2 className="text-3xl font-semibold tracking-tight text-[#1d1d1f] sm:text-4xl">
           Ready when your bank is.
         </h2>
+        <p className="mx-auto mt-3 max-w-md text-sm text-[#6e6e73]">
+          Create an account, fund the wallet from $50, and print your first bank-ready check for $10.
+        </p>
         <div className="mt-8">
           <Link
             href="/register"

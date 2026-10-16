@@ -19,6 +19,9 @@ export default async function WelcomeLayout({ children }: { children: ReactNode 
             <Link href="/#how" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
               How it works
             </Link>
+            <Link href="/#security" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
+              Security
+            </Link>
             <Link href="/#faq" className="hidden opacity-80 transition hover:opacity-100 sm:inline">
               FAQ
             </Link>
