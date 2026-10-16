@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { bankAccounts, checks } from "@/db/schema";
 import { logEvent } from "@/lib/data";
+import { getOwnedAccount } from "@/lib/data";
 import {
   ALL_STATUSES,
   FEATURE_IDS,
   STATUS_TRANSITIONS,
   evaluateCompliance,
 } from "@/lib/security";
-import { requireApiAuth } from "@/lib/auth";
+import { requireApiUser } from "@/lib/auth";
 import { getLayout, type LayoutId } from "@/lib/layouts";
 
 export const dynamic = "force-dynamic";
@@ -26,14 +27,15 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
 
   const { id: rawId } = await params;
   const id = Number(rawId);
   if (!id) return NextResponse.json({ errors: ["id is required"] }, { status: 400 });
 
-  const [current] = await db.select().from(checks).where(eq(checks.id, id)).limit(1);
+  const [current] = await db.select().from(checks).where(and(eq(checks.id, id), eq(checks.userId, user.id))).limit(1);
   if (!current) return NextResponse.json({ errors: ["Not found"] }, { status: 404 });
 
   const body = (await request.json()) as Record<string, unknown>;
@@ -141,13 +143,13 @@ export async function PATCH(
     }
   }
 
-  const [row] = await db.update(checks).set(patch).where(eq(checks.id, id)).returning();
+  const [row] = await db.update(checks).set(patch).where(and(eq(checks.id, id), eq(checks.userId, user.id))).returning();
   if (!row) return NextResponse.json({ errors: ["Not found"] }, { status: 404 });
 
   if (typeof body.status === "string" && body.status !== current.status) {
-    await logEvent(id, body.status, transitionDetail);
+    await logEvent(user.id, id, body.status, transitionDetail);
   } else if (wantsContentEdit) {
-    await logEvent(id, "updated", "Draft details edited");
+    await logEvent(user.id, id, "updated", "Draft details edited");
   }
   return NextResponse.json({ check: row });
 }
@@ -156,14 +158,15 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
 
   const { id: rawId } = await params;
   const id = Number(rawId);
   if (!id) return NextResponse.json({ errors: ["id is required"] }, { status: 400 });
 
-  const [row] = await db.select().from(checks).where(eq(checks.id, id)).limit(1);
+  const [row] = await db.select().from(checks).where(and(eq(checks.id, id), eq(checks.userId, user.id))).limit(1);
   if (!row) return NextResponse.json({ errors: ["Not found"] }, { status: 404 });
   if (row.status !== "draft") {
     return NextResponse.json(
@@ -176,6 +179,7 @@ export async function DELETE(
     );
   }
   await logEvent(
+    user.id,
     null,
     "check-deleted",
     `Draft #${row.checkNumber} for ${row.payeeName} deleted (${row.amountCents} cents)`,

@@ -1,6 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/", "/login", "/api/health"];
+// pages reachable without a session (root, auth screens, health)
+const PUBLIC_PATHS = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot",
+  "/reset",
+  "/verify",
+  "/setup-password",
+  "/api/health",
+];
 
 /**
  * Gate every page and API behind the session cookie. Middleware only checks

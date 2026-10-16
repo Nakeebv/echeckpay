@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import CheckWriter, { type AccountDTO, type EditingCheck, type PayeeDTO } from "@/components/CheckWriter";
+import { currentUser } from "@/lib/auth";
 import { getCheckDetail, listAccounts, listChecks, listPayees } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -8,11 +10,13 @@ export default async function WritePage({
 }: {
   searchParams: Promise<{ edit?: string }>;
 }) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { edit } = await searchParams;
   const [accounts, payees, checks] = await Promise.all([
-    listAccounts(),
-    listPayees(),
-    listChecks(500),
+    listAccounts(user.id),
+    listPayees(user.id),
+    listChecks(user.id, 500),
   ]);
 
   const existingSerials: Record<number, number[]> = {};
@@ -96,6 +100,7 @@ export default async function WritePage({
         payees={payeeDtos}
         existingSerials={existingSerials}
         editing={editing}
+        balanceCents={user.balanceCents}
       />
     </div>
   );

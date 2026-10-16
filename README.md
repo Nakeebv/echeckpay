@@ -76,3 +76,44 @@ see `src/db/index.ts` for the details.
   commit them.
 - Single-operator password sign-in with HMAC-signed session cookies. Bank data
   lives in your own database.
+
+## Multi-user, wallet & payments (NOWPayments)
+
+- Registration: email → verification link → password setup (min 10 chars,
+  letters + numbers + symbol, "I saved it" confirmation). Login is email +
+  password; recovery by email only.
+- Wallet: crypto deposits via NOWPayments invoices, $50 minimum. Every printed
+  check (reprints included) costs $10, charged atomically from the wallet
+  ledger. The clean print view is unlocked by a one-time token issued after a
+  successful charge; previews render with a VOID overlay.
+- Admin console (`/admin`, admin role only): user directory, block/delete,
+  manual password-reset links, wallet adjustments (audited), deposit order
+  reconciliation, support threads, platform audit trail.
+
+### Required Worker secrets
+
+```sh
+npx wrangler secret put DATABASE_URL          # existing
+npx wrangler secret put AUTH_SECRET           # existing
+npx wrangler secret put AUTH_PASSWORD         # legacy bootstrap password
+npx wrangler secret put NOWPAYMENTS_API_KEY
+npx wrangler secret put NOWPAYMENTS_IPN_SECRET
+npx wrangler secret put RESEND_API_KEY        # enables email sending
+npx wrangler secret put APP_BASE_URL          # e.g. https://echeckpay.nakeebv.workers.dev
+```
+
+### Payment setup checklist
+
+1. Create a NOWPayments account → API keys: copy API key + IPN secret key.
+2. `wrangler secret put NOWPAYMENTS_API_KEY` / `...NOWPAYMENTS_IPN_SECRET`.
+3. In the NOWPayments dashboard set the IPN callback URL to:
+   `https://echeckpay.nakeebv.workers.dev/api/nowpayments/ipn`
+4. Money credits only through the verified webhook → server-side status
+   reconciliation → idempotent ledger credit. Browser redirects never mark an
+   order paid. Until keys are set, the wallet shows "deposits unavailable".
+
+### Email setup
+
+Resend (free tier): create API key → `wrangler secret put RESEND_API_KEY`.
+Without it, registration/dev flows display verification links on-screen and
+password recovery falls back to admin-issued reset links.

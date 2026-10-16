@@ -1,20 +1,24 @@
 import RegisterTable, { type RegisterRowView } from "@/components/RegisterTable";
+import { redirect } from "next/navigation";
+import { currentUser } from "@/lib/auth";
 import { countChecks, listChecks } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 100;
 
-export default async function RegisterPage({
+export default async function ChecksPage({
   searchParams,
 }: {
   searchParams: Promise<{ page?: string }>;
 }) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { page: pageRaw } = await searchParams;
   const pageNumber = Math.max(1, Number(pageRaw) || 1);
   const [rows, total] = await Promise.all([
-    listChecks(PAGE_SIZE, (pageNumber - 1) * PAGE_SIZE),
-    countChecks(),
+    listChecks(user.id, PAGE_SIZE, (pageNumber - 1) * PAGE_SIZE),
+    countChecks(user.id),
   ]);
 
   const view: RegisterRowView[] = rows.map((r) => ({

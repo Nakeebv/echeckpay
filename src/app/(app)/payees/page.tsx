@@ -1,10 +1,14 @@
+import { redirect } from "next/navigation";
+import { currentUser } from "@/lib/auth";
 import PayeeManager, { type PayeeRow } from "@/components/PayeeManager";
 import { listPayees } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function PayeesPage() {
-  const payees = await listPayees();
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const payees = await listPayees(user.id);
   const rows: PayeeRow[] = payees.map((p) => ({
     id: p.id,
     name: p.name,

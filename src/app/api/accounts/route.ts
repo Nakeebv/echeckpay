@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { bankAccounts, checks } from "@/db/schema";
-import { listAccounts, logEvent } from "@/lib/data";
+import { getOwnedAccount, listAccounts, logEvent } from "@/lib/data";
 import { isRoutingValid } from "@/lib/micr";
 import { sanitizeDataUrl } from "@/lib/datasafe";
-import { requireApiAuth } from "@/lib/auth";
+import { requireApiUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -20,15 +20,15 @@ function int(v: unknown, fallback: number): number {
 }
 
 export async function GET() {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
-  const rows = await listAccounts();
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const rows = await listAccounts(auth.user.id);
   return NextResponse.json({ accounts: rows });
 }
 
 export async function POST(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
 
   const body = (await request.json()) as Payload;
   const routing = str(body.routingNumber).replace(/[^0-9]/g, "");
@@ -62,6 +62,7 @@ export async function POST(request: Request) {
   const [row] = await db
     .insert(bankAccounts)
     .values({
+      userId: auth.user.id,
       label: str(body.label).trim(),
       accountClass: str(body.accountClass, "business") === "personal" ? "personal" : "business",
       holderName: str(body.holderName).trim(),
@@ -88,19 +89,19 @@ export async function POST(request: Request) {
     })
     .returning();
 
-  await logEvent(null, "account-created", `Account "${row.label}" (${row.bankName || "drawee bank"}) added`);
+  await logEvent(auth.user.id, null, "account-created", `Account "${row.label}" (${row.bankName || "drawee bank"}) added`);
   return NextResponse.json({ account: row }, { status: 201 });
 }
 
 export async function PATCH(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
 
   const body = (await request.json()) as Payload;
   const id = int(body.id, 0);
   if (!id) return NextResponse.json({ errors: ["id is required"] }, { status: 400 });
 
-  const [existing] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id)).limit(1);
+  const existing = await getOwnedAccount(auth.user.id, id);
   if (!existing) return NextResponse.json({ errors: ["Not found"] }, { status: 404 });
 
   const patch: Record<string, unknown> = {};
@@ -218,20 +219,20 @@ export async function PATCH(request: Request) {
   }
 
   const [row] = await db.update(bankAccounts).set(patch).where(eq(bankAccounts.id, id)).returning();
-  await logEvent(null, "account-updated", `Account "${row.label}" edited`);
+  await logEvent(auth.user.id, null, "account-updated", `Account "${row.label}" edited`);
   return NextResponse.json({ account: row });
 }
 
 export async function DELETE(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
 
   const url = new URL(request.url);
   const id = Number(url.searchParams.get("id"));
   const confirmed = url.searchParams.get("confirm") === "1";
   if (!id) return NextResponse.json({ errors: ["id is required"] }, { status: 400 });
 
-  const [existing] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id)).limit(1);
+  const existing = await getOwnedAccount(auth.user.id, id);
   if (!existing) return NextResponse.json({ errors: ["Not found"] }, { status: 404 });
 
   const [{ n }] = await db
@@ -256,7 +257,7 @@ export async function DELETE(request: Request) {
     );
   }
 
-  await logEvent(null, "account-deleted", `Account "${existing.label}" deleted`);
+  await logEvent(auth.user.id, null, "account-deleted", `Account "${existing.label}" deleted`);
   await db.delete(bankAccounts).where(eq(bankAccounts.id, id));
   return NextResponse.json({ ok: true });
 }

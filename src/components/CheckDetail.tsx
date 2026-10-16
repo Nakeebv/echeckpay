@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckBack, CheckFace, type CheckAccountView, type CheckView } from "@/components/CheckDocument";
@@ -46,6 +46,8 @@ export default function CheckDetail({
   const [side, setSide] = useState<"front" | "back">("front");
   const [zoom, setZoom] = useState(0.95);
   const [busy, setBusy] = useState(false);
+  const [printBusy, setPrintBusy] = useState(false);
+  const chargeKey = useRef<string>(crypto.randomUUID());
   const [error, setError] = useState<string | null>(null);
   const [pendingStatus, setPendingStatus] = useState<string | null>(null);
   const [reason, setReason] = useState("");
@@ -196,12 +198,35 @@ export default function CheckDetail({
           </dl>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            <Link
-              href={`/checks/${check.id}/print`}
-              className="rounded-md bg-teal-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+            <button
+              type="button"
+              disabled={printBusy}
+              onClick={async () => {
+                setPrintBusy(true);
+                setError(null);
+                try {
+                  const res = await fetch("/api/print/charge", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ checkId: check.id, chargeKey: chargeKey.current }),
+                  });
+                  const data = (await res.json()) as { printUrl?: string; errors?: string[] };
+                  if (!res.ok || !data.printUrl) {
+                    setError((data.errors ?? ["Could not charge the print."]).join(" "));
+                    return;
+                  }
+                  router.push(data.printUrl);
+                } finally {
+                  setPrintBusy(false);
+                }
+              }}
+              className="rounded-full bg-[#0071e3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:opacity-50"
             >
-              Open print view
-            </Link>
+              {printBusy ? "Processing…" : `Print — $10`}
+            </button>
+            {error ? (
+              <span className="self-center text-xs font-semibold text-rose-700">{error}</span>
+            ) : null}
             {check.status === "draft" ? (
               <Link
                 href={`/write?edit=${check.id}`}

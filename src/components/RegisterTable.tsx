@@ -283,7 +283,7 @@ export default function RegisterTable({
                 </td>
                 <td className="px-4 py-2.5 text-right">
                   <Link
-                    href={`/checks/${r.id}/print`}
+                    href={`/checks/${r.id}`}
                     className={`rounded border px-2 py-1 text-[11px] font-semibold ${
                       r.status === "cleared" || r.status === "void" || r.status === "stopped"
                         ? "border-amber-300 text-amber-800 hover:bg-amber-50"

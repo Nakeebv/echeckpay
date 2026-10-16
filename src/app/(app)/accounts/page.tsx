@@ -1,10 +1,14 @@
+import { redirect } from "next/navigation";
+import { currentUser } from "@/lib/auth";
 import AccountManager, { type AccountRow } from "@/components/AccountManager";
 import { listAccounts } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountsPage() {
-  const accounts = await listAccounts();
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const accounts = await listAccounts(user.id);
   const rows: AccountRow[] = accounts.map((a) => ({
     id: a.id,
     label: a.label,

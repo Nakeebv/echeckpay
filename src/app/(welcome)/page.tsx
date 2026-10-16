@@ -141,7 +141,7 @@ export default function WelcomePage() {
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Link
-            href="/login?next=%2Fdashboard"
+            href="/register"
             className="rounded-full bg-[#0071e3] px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-[#0077ed]"
           >
             Get started
@@ -295,7 +295,7 @@ export default function WelcomePage() {
         </h2>
         <div className="mt-8">
           <Link
-            href="/login?next=%2Fdashboard"
+            href="/register"
             className="rounded-full bg-[#0071e3] px-6 py-3 text-[15px] font-semibold text-white transition hover:bg-[#0077ed]"
           >
             Get started

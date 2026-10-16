@@ -1,69 +1,112 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual, createHash } from "node:crypto";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { db } from "@/db";
+import { users } from "@/db/schema";
+import type { User } from "@/db/schema";
 
 export const SESSION_COOKIE = "echeckpay_session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-/**
- * Single-operator credentials app. The password comes from AUTH_PASSWORD and
- * the cookie is an HMAC-signed expiry — no session store needed. If AUTH_PASSWORD
- * is unset we fall back to a development default and say so on the login screen.
- */
-export const FALLBACK_PASSWORD = "echeckpay-dev";
-const FALLBACK_SECRET = "echeckpay-development-secret-not-for-production";
+/* ------------------------------------------------------------------ */
+/* secrets                                                             */
+/* ------------------------------------------------------------------ */
 
-function password(): string {
-  return process.env.AUTH_PASSWORD?.trim() || FALLBACK_PASSWORD;
+function authSecret(): string {
+  return process.env.AUTH_SECRET?.trim() || "echeckpay-development-secret-not-for-production";
 }
 
-function usingFallbackPassword(): boolean {
-  return !process.env.AUTH_PASSWORD?.trim();
+function hmac(payload: string): string {
+  return createHmac("sha256", authSecret()).update(payload).digest("base64url");
 }
 
-function secret(): string {
-  return process.env.AUTH_SECRET?.trim() || `${password()}::${FALLBACK_SECRET}`;
+export function sha256Hex(input: string): string {
+  return createHash("sha256").update(input).digest("hex");
 }
 
-function sign(payload: string): string {
-  return createHmac("sha256", secret()).update(payload).digest("base64url");
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && timingSafeEqual(ab, bb);
 }
 
-export function verifyPassword(input: string): boolean {
-  const a = Buffer.from(input);
-  const b = Buffer.from(password());
-  return a.length === b.length && timingSafeEqual(a, b);
+/* ------------------------------------------------------------------ */
+/* passwords — PBKDF2-HMAC-SHA256 via WebCrypto (works on Workers)     */
+/* ------------------------------------------------------------------ */
+
+const PBKDF2_ITERATIONS = 60_000;
+
+function toB64(buf: ArrayBuffer | Uint8Array): string {
+  return Buffer.from(new Uint8Array(buf)).toString("base64");
 }
 
-export function makeSessionToken(): string {
+function fromB64(b64: string): Uint8Array {
+  return new Uint8Array(Buffer.from(b64, "base64"));
+}
+
+export async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16);
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: salt as unknown as BufferSource, iterations: PBKDF2_ITERATIONS },
+    key,
+    256,
+  );
+  return `pbkdf2$${PBKDF2_ITERATIONS}$${toB64(salt)}$${toB64(bits)}`;
+}
+
+export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const parts = stored.split("$");
+  if (parts.length !== 4 || parts[0] !== "pbkdf2") return false;
+  const iterations = Number(parts[1]);
+  const salt = fromB64(parts[2]);
+  const expected = parts[3];
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", hash: "SHA-256", salt: salt as unknown as BufferSource, iterations },
+    key,
+    256,
+  );
+  return safeEqual(toB64(bits), expected);
+}
+
+/* password policy: ≥10 chars, letters + digits + a symbol */
+export function validatePasswordStrength(password: string): string | null {
+  if (password.length < 10) return "Use at least 10 characters.";
+  if (!/[a-zA-Z]/.test(password)) return "Include at least one letter.";
+  if (!/[0-9]/.test(password)) return "Include at least one number.";
+  if (!/[^a-zA-Z0-9]/.test(password)) return "Include at least one symbol.";
+  return null;
+}
+
+/* ------------------------------------------------------------------ */
+/* sessions — signed, user-scoped                                      */
+/* ------------------------------------------------------------------ */
+
+export function makeSessionToken(userId: number): string {
   const exp = Date.now() + SESSION_TTL_MS;
-  const nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
-  const payload = `${exp}|${nonce}`;
-  return `${payload}|${sign(payload)}`;
+  const nonce = randomBytes(8).toString("base64url");
+  const payload = `${userId}|${exp}|${nonce}`;
+  return `${payload}|${hmac(payload)}`;
 }
 
-export function verifySessionToken(token: string | undefined | null): boolean {
-  if (!token) return false;
+export function verifySessionToken(token: string | undefined | null): number | null {
+  if (!token) return null;
   const parts = token.split("|");
-  if (parts.length !== 3) return false;
-  const [expRaw, nonce, mac] = parts;
-  const payload = `${expRaw}|${nonce}`;
-  const expected = sign(payload);
-  const a = Buffer.from(mac);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) return false;
+  if (parts.length !== 4) return null;
+  const [userIdRaw, expRaw, nonce, mac] = parts;
+  const payload = `${userIdRaw}|${expRaw}|${nonce}`;
+  if (!safeEqual(hmac(payload), mac)) return null;
+  const userId = Number(userIdRaw);
   const exp = Number(expRaw);
-  return Number.isFinite(exp) && exp > Date.now();
+  if (!Number.isFinite(userId) || !Number.isFinite(exp) || exp <= Date.now()) return null;
+  return userId;
 }
 
-export async function isAuthed(): Promise<boolean> {
+export async function createSession(userId: number): Promise<void> {
   const jar = await cookies();
-  return verifySessionToken(jar.get(SESSION_COOKIE)?.value);
-}
-
-export async function createSession(): Promise<void> {
-  const jar = await cookies();
-  jar.set(SESSION_COOKIE, makeSessionToken(), {
+  jar.set(SESSION_COOKIE, makeSessionToken(userId), {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
@@ -77,10 +120,68 @@ export async function destroySession(): Promise<void> {
   jar.delete(SESSION_COOKIE);
 }
 
-export const loginIsFallback = usingFallbackPassword;
+/* ------------------------------------------------------------------ */
+/* current user helpers                                                */
+/* ------------------------------------------------------------------ */
 
-/** API guard: returns a 401 response when unauthenticated, otherwise null. */
-export async function requireApiAuth(): Promise<NextResponse | null> {
-  if (await isAuthed()) return null;
-  return NextResponse.json({ errors: ["Sign in required."] }, { status: 401 });
+export async function isAuthed(): Promise<boolean> {
+  return (await currentUser()) !== null;
+}
+
+/** Resolve the session cookie to a live user row, or null. */
+export async function currentUser(): Promise<User | null> {
+  const jar = await cookies();
+  const userId = verifySessionToken(jar.get(SESSION_COOKIE)?.value);
+  if (userId === null) return null;
+  const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = rows[0];
+  if (!user || user.status !== "active") return null;
+  return user;
+}
+
+export async function currentUserByToken(token: string | undefined | null): Promise<User | null> {
+  const userId = verifySessionToken(token);
+  if (userId === null) return null;
+  const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = rows[0];
+  if (!user || user.status !== "active") return null;
+  return user;
+}
+
+/** API guard: returns a 401 response when unauthenticated, otherwise the user. */
+export async function requireApiUser(): Promise<{ user: User } | { error: NextResponse }> {
+  const jar = await cookies();
+  const token = jar.get(SESSION_COOKIE)?.value;
+  const userId = verifySessionToken(token);
+  if (userId === null) {
+    return { error: NextResponse.json({ errors: ["Sign in required."] }, { status: 401 }) };
+  }
+  const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  const user = rows[0];
+  if (!user || user.status !== "active") {
+    return { error: NextResponse.json({ errors: ["Account unavailable."] }, { status: 403 }) };
+  }
+  return { user };
+}
+
+/** Admin API guard. */
+export async function requireApiAdmin(): Promise<{ user: User } | { error: NextResponse }> {
+  const result = await requireApiUser();
+  if ("error" in result) return result;
+  if (result.user.role !== "admin") {
+    return { error: NextResponse.json({ errors: ["Admin access required."] }, { status: 403 }) };
+  }
+  return result;
+}
+
+/* ------------------------------------------------------------------ */
+/* one-time tokens (email verification / password reset / print pass)  */
+/* ------------------------------------------------------------------ */
+
+export function newOpaqueToken(): string {
+  return randomBytes(32).toString("base64url");
+}
+
+export function tokenHash(token: string): string {
+  return sha256Hex(token);
 }

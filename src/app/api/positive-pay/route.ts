@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { bankAccounts, checks } from "@/db/schema";
 import { logEvent } from "@/lib/data";
 import { formatPlain } from "@/lib/amount";
-import { requireApiAuth } from "@/lib/auth";
+import { requireApiUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -38,8 +38,8 @@ const rowSelection = {
 };
 
 export async function GET(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
 
   const url = new URL(request.url);
   const accountId = Number(url.searchParams.get("accountId"));
@@ -55,6 +55,7 @@ export async function GET(request: Request) {
     : ["issued", "printed"];
 
   const conditions = [
+    eq(checks.userId, auth.user.id),
     ...(statusFilter.length ? [inArray(checks.status, statusFilter)] : []),
     ...(accountId ? [eq(checks.accountId, accountId)] : []),
   ];
@@ -66,7 +67,7 @@ export async function GET(request: Request) {
     .where(conditions.length ? and(...conditions) : undefined);
 
   if (rows.length) {
-    await logEvent(null, "positive-pay-export", `${rows.length} issue record(s) exported`);
+    await logEvent(auth.user.id, null, "positive-pay-export", `${rows.length} issue record(s) exported`);
   }
 
   const header = "BANK_ACCOUNT,ROUTING,CHECK_NUMBER,AMOUNT,PAYEE,ISSUE_DATE,STATUS";
@@ -93,8 +94,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
 
   const body = (await request.json()) as { ids?: number[] };
   const ids = Array.isArray(body.ids) ? body.ids.map(Number).filter(Boolean) : [];
@@ -102,7 +104,7 @@ export async function POST(request: Request) {
 
   // Only drafts and printed items may move to issued. Void / stopped / cleared
   // records can never be re-activated through the Positive Pay path.
-  const rows = await db.select().from(checks).where(inArray(checks.id, ids));
+  const rows = await db.select().from(checks).where(and(inArray(checks.id, ids), eq(checks.userId, user.id)));
   const updatable = rows.filter((r) => r.status === "draft" || r.status === "printed");
 
   if (updatable.length) {
@@ -111,6 +113,7 @@ export async function POST(request: Request) {
       .set({ status: "issued" })
       .where(inArray(checks.id, updatable.map((r) => r.id)));
     await logEvent(
+      user.id,
       null,
       "positive-pay-issue",
       `${updatable.length} record(s) transmitted to the drawee bank`,

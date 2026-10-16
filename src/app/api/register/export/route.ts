@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { bankAccounts, checks } from "@/db/schema";
-import { requireApiAuth } from "@/lib/auth";
+import { requireApiUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +10,8 @@ const STATUSES = ["draft", "printed", "issued", "cleared", "void", "stopped"];
 
 /** CSV export of the full register (all statuses, Newline-safe cell encoding). */
 export async function GET(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
 
   const url = new URL(request.url);
   const accountId = Number(url.searchParams.get("accountId")) || 0;
@@ -33,12 +33,12 @@ export async function GET(request: Request) {
     .from(checks)
     .innerJoin(bankAccounts, eq(checks.accountId, bankAccounts.id))
     .where(
-      accountId && STATUSES.includes(status)
-        ? eq(checks.accountId, accountId)
-        : accountId
-          ? eq(checks.accountId, accountId)
-          : undefined,
-    );
+        accountId && STATUSES.includes(status)
+          ? and(eq(checks.userId, auth.user.id), eq(checks.accountId, accountId))
+          : accountId
+            ? and(eq(checks.userId, auth.user.id), eq(checks.accountId, accountId))
+            : eq(checks.userId, auth.user.id),
+      );
 
   const cell = (v: string | number) => {
     const s = String(v).replace(/[\r\n\t]+/g, " ").trim();

@@ -1,9 +1,12 @@
 import { db } from "@/db";
+import { ensureSeeded } from "@/lib/data";
 import { sql } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
+  // deployment bootstrap: admin account + demo data (idempotent, non-blocking errors)
+  await ensureSeeded().catch(() => {});
   try {
     await db.execute(sql`select 1`);
     return Response.json({ ok: true });

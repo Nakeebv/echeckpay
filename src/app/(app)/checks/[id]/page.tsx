@@ -1,4 +1,5 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { currentUser } from "@/lib/auth";
 import CheckDetail from "@/components/CheckDetail";
 import type { CheckAccountView, CheckView } from "@/components/CheckDocument";
 import { getCheckDetail, serialExists, toAccountView } from "@/lib/data";
@@ -11,10 +12,12 @@ export default async function CheckDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await currentUser();
+  if (!user) redirect("/login");
   const { id } = await params;
   const numericId = Number(id);
   if (!Number.isFinite(numericId)) notFound();
-  const detail = await getCheckDetail(numericId);
+  const detail = await getCheckDetail(numericId, user.role === "admin" ? null : user.id);
   if (!detail) notFound();
 
   const { check, account, audit } = detail;

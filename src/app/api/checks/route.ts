@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { bankAccounts, checks } from "@/db/schema";
 import { createCheck, listChecks, logEvent } from "@/lib/data";
 import { getLayout } from "@/lib/layouts";
 import { FEATURE_IDS, ALL_STATUSES, evaluateCompliance } from "@/lib/security";
-import { requireApiAuth } from "@/lib/auth";
+import { getOwnedAccount } from "@/lib/data";
+import { PRINT_PRICE_CENTS } from "@/lib/wallet";
+import { requireApiUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -14,21 +16,29 @@ function str(v: unknown, fallback = ""): string {
 }
 
 export async function GET() {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
-  const rows = await listChecks();
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const rows = await listChecks(auth.user.id);
   return NextResponse.json({ checks: rows });
 }
 
 export async function POST(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
+  // zero/negative balance cannot even hold a draft: printing is the product
+  if (user.balanceCents < PRINT_PRICE_CENTS) {
+    return NextResponse.json(
+      { errors: ["Insufficient balance — add at least $10 to save, preview or print."], code: "insufficient_funds" },
+      { status: 402 },
+    );
+  }
 
   const body = (await request.json()) as Record<string, unknown>;
   const accountId = Number(body.accountId);
   if (!accountId) return NextResponse.json({ errors: ["Select a bank account."] }, { status: 400 });
 
-  const [account] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, accountId)).limit(1);
+  const account = await getOwnedAccount(user.id, accountId);
   if (!account) return NextResponse.json({ errors: ["Unknown account."] }, { status: 400 });
 
   const amountCents = Math.round(Number(body.amountCents ?? 0));
@@ -100,27 +110,28 @@ export async function POST(request: Request) {
     signatureMode,
     includeAmountField: Boolean(body.includeAmountField),
     background: str(body.background, account.background) || account.background,
-  });
+  }, user.id);
 
   if (!result.ok) {
     return NextResponse.json({ errors: [result.error] }, { status: 409 });
   }
 
   if (result.check.status !== "draft") {
-    await logEvent(result.check.id, result.check.status, `Saved directly as ${result.check.status}`);
+    await logEvent(user.id, result.check.id, result.check.status, `Saved directly as ${result.check.status}`);
   }
   return NextResponse.json({ check: result.check }, { status: 201 });
 }
 
 export async function DELETE(request: Request) {
-  const unauthorized = await requireApiAuth();
-  if (unauthorized) return unauthorized;
+  const auth = await requireApiUser();
+  if ("error" in auth) return auth.error;
+  const { user } = auth;
 
   const url = new URL(request.url);
   const id = Number(url.searchParams.get("id"));
   if (!id) return NextResponse.json({ errors: ["id is required"] }, { status: 400 });
 
-  const [row] = await db.select().from(checks).where(eq(checks.id, id)).limit(1);
+  const [row] = await db.select().from(checks).where(and(eq(checks.id, id), eq(checks.userId, user.id))).limit(1);
   if (!row) return NextResponse.json({ errors: ["Not found"] }, { status: 404 });
   if (row.status !== "draft") {
     return NextResponse.json(
@@ -135,6 +146,7 @@ export async function DELETE(request: Request) {
 
   // keep the audit row: log BEFORE delete; the FK now preserves events
   await logEvent(
+    user.id,
     null,
     "check-deleted",
     `Draft #${row.checkNumber} for ${row.payeeName} deleted (${row.amountCents} cents)`,

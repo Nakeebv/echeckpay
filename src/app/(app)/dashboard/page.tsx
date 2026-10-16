@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Badge, Card, SectionTitle, StatCard } from "@/components/ui";
 import { getStats, listChecks, listRecentAudits } from "@/lib/data";
 import { formatCents } from "@/lib/amount";
+import { currentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +35,13 @@ const ACTIONS = [
 ];
 
 export default async function DashboardPage() {
-  const [stats, recent, audits] = await Promise.all([getStats(), listChecks(6), listRecentAudits(8)]);
+  const user = await currentUser();
+  if (!user) redirect("/login");
+  const [stats, recent, audits] = await Promise.all([
+    getStats(user.id),
+    listChecks(user.id, 6),
+    listRecentAudits(user.id, 8),
+  ]);
 
   return (
     <div className="space-y-10">

@@ -19,6 +19,7 @@ export default function PrintView({
   status,
   blockers,
   blockingLabels,
+  clean = true,
 }: {
   account: CheckAccountView;
   check: CheckView;
@@ -28,6 +29,8 @@ export default function PrintView({
   status: string;
   blockers: number;
   blockingLabels: string[];
+  /** false: every sheet prints with a VOID overlay (no valid print pass) */
+  clean?: boolean;
 }) {
   const [includeBack, setIncludeBack] = useState(true);
   const [copies, setCopies] = useState(1);
@@ -35,12 +38,21 @@ export default function PrintView({
 
   const dead = status === "void" || status === "stopped";
   const specimen = status === "cleared";
-  const watermark: "none" | "void" | "specimen" = dead ? "void" : specimen ? "specimen" : "none";
+  const watermark: "none" | "void" | "specimen" = !clean
+    ? "void"
+    : dead
+      ? "void"
+      : specimen
+        ? "specimen"
+        : "none";
   const reprinting = dead || specimen;
   const printable = blockers === 0 && status !== "void" && status !== "stopped";
 
   return (
-    <div className="space-y-4">
+    <div
+      className="select-none space-y-4"
+      onContextMenu={(e) => e.preventDefault()}
+    >
       <div className="no-print flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="mr-auto">
           <div className="text-sm font-bold text-slate-900">

@@ -119,12 +119,16 @@ export default function CheckWriter({
   payees,
   existingSerials,
   editing,
+  balanceCents = Number.MAX_SAFE_INTEGER,
 }: {
   accounts: AccountDTO[];
   payees: PayeeDTO[];
   existingSerials: Record<number, number[]>;
   editing?: EditingCheck | null;
+  balanceCents?: number;
 }) {
+  const PRINT_PRICE_CENTS = 1000;
+  const balanceOk = balanceCents >= PRINT_PRICE_CENTS;
   const router = useRouter();
   const initialAccount = editing
     ? (accounts.find((a) => a.id === editing.accountId) ?? accounts[0])
@@ -369,6 +373,14 @@ export default function CheckWriter({
     }, 400);
   }
 
+  /** one idempotency key per mounted writer — double-clicks charge once */
+  const chargeKey = useRef<string>(crypto.randomUUID());
+
+  /** save the draft, then charge the $10 print and open the clean print view */
+  async function saveAndCharge() {
+    await save("print");
+  }
+
   async function save(next?: "print") {
     if (!account) return;
     setBusy(true);
@@ -416,11 +428,19 @@ export default function CheckWriter({
         id = data.check?.id;
       }
       if (next === "print" && id) {
-        await fetch(`/api/checks/${id}`, {
-          method: "PATCH",
+        const res = await fetch("/api/print/charge", {
+          method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ status: "printed" }),
+          body: JSON.stringify({ checkId: id, chargeKey: chargeKey.current }),
         });
+        const data = (await res.json()) as { printUrl?: string; errors?: string[] };
+        if (!res.ok || !data.printUrl) {
+          setError((data.errors ?? ["Could not charge the print."]).join(" "));
+          setBusy(false);
+          return;
+        }
+        router.push(data.printUrl);
+        return;
       }
       router.push(id ? `/checks/${id}` : "/checks");
     } finally {
@@ -1043,7 +1063,7 @@ export default function CheckWriter({
                   }}
                 >
                   {side === "front" ? (
-                    <CheckFace account={accountView} check={checkView} layoutId={layout} />
+                    <CheckFace account={accountView} check={checkView} layoutId={layout} watermark={"void"} />
                   ) : (
                     <CheckBack account={accountView} check={checkView} layoutId={layout} />
                   )}
@@ -1085,15 +1105,15 @@ export default function CheckWriter({
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={busy || compliance.blockers > 0}
-              onClick={() => save("print")}
+              disabled={busy || !balanceOk || compliance.blockers > 0}
+              onClick={() => saveAndCharge()}
               className="rounded-full bg-[#0071e3] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              {busy ? "Saving…" : "Save & print"}
+              {busy ? "Working…" : !balanceOk ? "Add $10 to print" : "Save & print — $10"}
             </button>
             <button
               type="button"
-              disabled={busy || compliance.blockers > 0}
+              disabled={busy || !balanceOk || compliance.blockers > 0}
               onClick={() => save()}
               className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -1105,6 +1125,14 @@ export default function CheckWriter({
               </span>
             ) : null}
           </div>
+          {!balanceOk ? (
+            <p className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              Your balance is below $10 — saving and printing are locked until you add funds.{" "}
+              <Link href="/wallet" className="font-semibold underline">
+                Add funds
+              </Link>
+            </p>
+          ) : null}
         </Card>
 
         <CompliancePanel result={compliance} />

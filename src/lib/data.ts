@@ -1,10 +1,12 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { auditEvents, bankAccounts, checks, payees } from "@/db/schema";
+import { auditEvents, bankAccounts, checks, payees, users } from "@/db/schema";
+import { hashPassword } from "@/lib/auth";
 import { BASELINE_FEATURES } from "@/lib/security";
 
 let seeded = false;
-let seedPromise: Promise<void> | null = null;
+let seedPromise: Promise<number | null> | null = null;
+let seededAdminId: number | null = null;
 
 /** Retry connection-level failures (serverless pools drop idle sockets). */
 async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
@@ -31,46 +33,80 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
 }
 
 /**
- * Idempotent demo seed so a fresh database is immediately usable. Guarded by a
- * shared in-process promise *and* a Postgres advisory lock, because server
- * components fire several parallel queries on first render.
+ * Idempotent bootstrap: creates the operator/admin account (preserving the
+ * legacy operator password) plus demo data on a brand-new database. Guarded
+ * by a non-blocking advisory lock so fresh isolates never stall each other.
+ * Returns the admin user id.
  */
-export async function ensureSeeded(): Promise<void> {
-  if (seeded) return;
+export async function ensureSeeded(): Promise<number | null> {
+  if (seeded) return seededAdminId;
   if (!seedPromise) {
-    seedPromise = runSeed().catch(() => {
-      // table may not exist yet during first bootstrap
-      seeded = false;
-    });
+    seedPromise = runSeed()
+      .then((id) => {
+        seededAdminId = id;
+        seeded = id !== null;
+        return id;
+      })
+      .catch(() => {
+        seeded = false;
+        return null;
+      });
   }
-  await seedPromise;
+  return seedPromise;
 }
 
-async function runSeed(): Promise<void> {
-  await withRetry(() => db.transaction(async (tx) => {
-    // Non-blocking: if another isolate is seeding, skip rather than block —
-    // a blocking advisory lock stalls every page until the lock resolves.
-    const lock = await tx.execute(sql`select pg_try_advisory_xact_lock(778811223) as ok`);
-    const rows = (lock as unknown as { rows?: { ok?: boolean }[] }).rows ?? [];
-    if (rows[0]?.ok !== true) {
-      return;
-    }
-    const existing = await tx.select({ n: sql<number>`count(*)::int` }).from(bankAccounts);
-    if ((existing[0]?.n ?? 0) > 0) {
-      return;
-    }
-    await seedAll(tx);
-  }));
-  seeded = true;
+async function runSeed(): Promise<number | null> {
+  return withRetry(async () => {
+    const adminId = await db.transaction(async (tx) => {
+      const lock = await tx.execute(sql`select pg_try_advisory_xact_lock(778811223) as ok`);
+      const lockRows = (lock as unknown as { rows?: { ok?: boolean }[] }).rows ?? [];
+      if (lockRows[0]?.ok !== true) {
+        // another isolate is seeding; its outcome is identical to ours
+        const [existing] = await tx.select({ id: users.id }).from(users).where(eq(users.role, "admin")).limit(1);
+        return existing?.id ?? null;
+      }
+      const [userCount] = await tx.select({ n: sql<number>`count(*)::int` }).from(users);
+      let adminId: number;
+      if ((userCount?.n ?? 0) === 0) {
+        const [admin] = await tx
+          .insert(users)
+          .values({
+            email: (process.env.ADMIN_EMAIL?.trim().toLowerCase() || "owner@echeckpay.local"),
+            // preserves the operator's original password
+            passwordHash: await hashPassword(process.env.ADMIN_PASSWORD?.trim() || "REDACTED-CREDENTIAL#"),
+            role: "admin",
+            emailVerified: 1,
+            balanceCents: 100_00, // operator starts with enough to print immediately
+          })
+          .returning({ id: users.id });
+        adminId = admin.id;
+      } else {
+        const [admin] = await tx.select({ id: users.id }).from(users).where(eq(users.role, "admin")).limit(1);
+        if (!admin) throw new Error("admin bootstrap failed");
+        adminId = admin.id;
+      }
+
+      const [acctCount] = await tx
+        .select({ n: sql<number>`count(*)::int` })
+        .from(bankAccounts)
+        .where(eq(bankAccounts.userId, adminId));
+      if ((acctCount?.n ?? 0) === 0) {
+        await seedAll(tx, adminId);
+      }
+      return adminId;
+    });
+    return adminId;
+  });
 }
 
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
-async function seedAll(db: Tx): Promise<void> {
+async function seedAll(db: Tx, userId: number): Promise<void> {
   const inserted = await db
     .insert(bankAccounts)
       .values([
         {
+          userId,
           label: "Northwind Studio LLC — Operating",
           accountClass: "business",
           holderName: "Northwind Studio LLC",
@@ -88,6 +124,7 @@ async function seedAll(db: Tx): Promise<void> {
           signatureTitle: "Authorized Signature — Treasurer",
         },
         {
+          userId,
           label: "Jordan Ellis — Household",
           accountClass: "personal",
           holderName: "Jordan Ellis",
@@ -110,11 +147,11 @@ async function seedAll(db: Tx): Promise<void> {
     const payeeRows = await db
       .insert(payees)
       .values([
-        { name: "Willamette Print & Bindery", address: "410 SE Water Ave\nPortland, OR 97214", isBusiness: true, defaultMemo: "Invoice" },
-        { name: "City of Portland — Water Bureau", address: "1120 SW 5th Ave\nPortland, OR 97204", isBusiness: true, defaultMemo: "Utility account" },
-        { name: "Dr. Amara Osei, DDS", address: "3300 NE Broadway\nPortland, OR 97232", defaultMemo: "Dental" },
-        { name: "Sunrise Property Group LLC", address: "88 NW Davis St\nPortland, OR 97209", isBusiness: true, defaultMemo: "Rent — Unit 4B" },
-        { name: "Puget Sound Logistics", address: "2200 6th Ave S\nSeattle, WA 98134", isBusiness: true, defaultMemo: "Freight charges" },
+        { userId, name: "Willamette Print & Bindery", address: "410 SE Water Ave\nPortland, OR 97214", isBusiness: true, defaultMemo: "Invoice" },
+        { userId, name: "City of Portland — Water Bureau", address: "1120 SW 5th Ave\nPortland, OR 97204", isBusiness: true, defaultMemo: "Utility account" },
+        { userId, name: "Dr. Amara Osei, DDS", address: "3300 NE Broadway\nPortland, OR 97232", defaultMemo: "Dental" },
+        { userId, name: "Sunrise Property Group LLC", address: "88 NW Davis St\nPortland, OR 97209", isBusiness: true, defaultMemo: "Rent — Unit 4B" },
+        { userId, name: "Puget Sound Logistics", address: "2200 6th Ave S\nSeattle, WA 98134", isBusiness: true, defaultMemo: "Freight charges" },
       ])
       .returning({ id: payees.id, name: payees.name });
 
@@ -131,6 +168,7 @@ async function seedAll(db: Tx): Promise<void> {
       {
         accountId: biz,
         payeeId: pid("Puget Sound Logistics"),
+        userId,
         checkNumber: 4501,
         payeeName: "Puget Sound Logistics",
         amountCents: 128450,
@@ -145,6 +183,7 @@ async function seedAll(db: Tx): Promise<void> {
       {
         accountId: biz,
         payeeId: pid("Sunrise Property Group LLC"),
+        userId,
         checkNumber: 4502,
         payeeName: "Sunrise Property Group LLC",
         amountCents: 245000,
@@ -159,6 +198,7 @@ async function seedAll(db: Tx): Promise<void> {
       {
         accountId: per,
         payeeId: pid("Willamette Print & Bindery"),
+        userId,
         checkNumber: 1201,
         payeeName: "Willamette Print & Bindery",
         amountCents: 8760,
@@ -173,6 +213,7 @@ async function seedAll(db: Tx): Promise<void> {
       {
         accountId: per,
         payeeId: pid("Dr. Amara Osei, DDS"),
+        userId,
         checkNumber: 1202,
         payeeName: "Dr. Amara Osei, DDS",
         amountCents: 34200,
@@ -189,6 +230,7 @@ async function seedAll(db: Tx): Promise<void> {
     const created = await db.insert(checks).values(rows).returning({ id: checks.id });
     await db.insert(auditEvents).values(
       created.map((c, i) => ({
+        userId,
         checkId: c.id,
         action: "created",
         detail: `Draft ${rows[i].checkNumber} for ${rows[i].payeeName}`,
@@ -227,7 +269,6 @@ export function toAccountView<T extends {
     bankAddress: a.bankAddress,
     routingNumber: a.routingNumber,
     accountNumber: a.accountNumber,
-    // strictly manual — only a stored fraction is ever printed, never derived
     fraction: a.fraction,
     onUsFormat: a.onUsFormat,
     logoDataUrl: a.logoDataUrl,
@@ -245,14 +286,25 @@ export function toAccountView<T extends {
   };
 }
 
-export async function listAccounts() {
+export async function listAccounts(userId: number) {
   await ensureSeeded();
-  return withRetry(() => db.select().from(bankAccounts).orderBy(bankAccounts.id));
+  return withRetry(() => db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId)).orderBy(bankAccounts.id));
 }
 
-export async function listPayees() {
+export async function getOwnedAccount(userId: number, accountId: number) {
+  const rows = await withRetry(() =>
+    db
+      .select()
+      .from(bankAccounts)
+      .where(and(eq(bankAccounts.id, accountId), eq(bankAccounts.userId, userId)))
+      .limit(1),
+  );
+  return rows[0] ?? null;
+}
+
+export async function listPayees(userId: number) {
   await ensureSeeded();
-  return withRetry(() => db.select().from(payees).orderBy(payees.name));
+  return withRetry(() => db.select().from(payees).where(eq(payees.userId, userId)).orderBy(payees.name));
 }
 
 export type RegisterRow = {
@@ -271,7 +323,7 @@ export type RegisterRow = {
   printedAt: Date | null;
 };
 
-export async function listChecks(limit = 200, offset = 0): Promise<RegisterRow[]> {
+export async function listChecks(userId: number, limit = 200, offset = 0): Promise<RegisterRow[]> {
   await ensureSeeded();
   const rows = await withRetry(() => db
     .select({
@@ -291,15 +343,18 @@ export async function listChecks(limit = 200, offset = 0): Promise<RegisterRow[]
     })
     .from(checks)
     .innerJoin(bankAccounts, eq(checks.accountId, bankAccounts.id))
+    .where(eq(checks.userId, userId))
     .orderBy(desc(checks.checkNumber), desc(checks.id))
     .limit(limit)
     .offset(offset));
   return rows;
 }
 
-export async function countChecks(): Promise<number> {
+export async function countChecks(userId: number): Promise<number> {
   await ensureSeeded();
-  const [row] = await withRetry(() => db.select({ n: sql<number>`count(*)::int` }).from(checks));
+  const [row] = await withRetry(() =>
+    db.select({ n: sql<number>`count(*)::int` }).from(checks).where(eq(checks.userId, userId)),
+  );
   return row?.n ?? 0;
 }
 
@@ -313,23 +368,30 @@ export async function listAuditsForCheck(id: number) {
   );
 }
 
-/** Global audit feed (incl. account/payee/positive-pay events with no check). */
-export async function listRecentAudits(limit = 12) {
+/** Per-user audit feed. */
+export async function listRecentAudits(userId: number, limit = 12) {
   await ensureSeeded();
   return withRetry(() =>
-    db.select().from(auditEvents).orderBy(desc(auditEvents.id)).limit(limit),
+    db.select().from(auditEvents).where(eq(auditEvents.userId, userId)).orderBy(desc(auditEvents.id)).limit(limit),
   );
 }
 
-export async function getCheckDetail(id: number) {
-  await ensureSeeded();
+/** Global audit feed — admin only. */
+export async function listAllAudits(limit = 30) {
+  return withRetry(() => db.select().from(auditEvents).orderBy(desc(auditEvents.id)).limit(limit));
+}
+
+/** Owner-scoped check detail; userId=null grants admin visibility. */
+export async function getCheckDetail(id: number, userId: number | null = null) {
+  const where =
+    userId === null ? eq(checks.id, id) : and(eq(checks.id, id), eq(checks.userId, userId));
   const rows = await withRetry(() =>
     db
       .select({ check: checks, account: bankAccounts, payee: payees })
       .from(checks)
       .innerJoin(bankAccounts, eq(checks.accountId, bankAccounts.id))
       .leftJoin(payees, eq(checks.payeeId, payees.id))
-      .where(eq(checks.id, id))
+      .where(where)
       .limit(1),
   );
   if (!rows.length) return null;
@@ -378,14 +440,13 @@ export type CreateCheckResult =
  * the unique index is the backstop that turns any residual race into a clean
  * error instead of a duplicate instrument.
  */
-export async function createCheck(input: CreateCheckInput): Promise<CreateCheckResult> {
-  await ensureSeeded();
+export async function createCheck(input: CreateCheckInput, userId: number): Promise<CreateCheckResult> {
   try {
     const created = await db.transaction(async (tx) => {
       const [account] = await tx
         .select()
         .from(bankAccounts)
-        .where(eq(bankAccounts.id, input.accountId))
+        .where(and(eq(bankAccounts.id, input.accountId), eq(bankAccounts.userId, userId)))
         .for("update")
         .limit(1);
       if (!account) throw new Error("Unknown account");
@@ -414,6 +475,7 @@ export async function createCheck(input: CreateCheckInput): Promise<CreateCheckR
         .insert(checks)
         .values({
           accountId: input.accountId,
+          userId,
           payeeId: input.payeeId,
           checkNumber,
           payeeName: input.payeeName,
@@ -436,6 +498,7 @@ export async function createCheck(input: CreateCheckInput): Promise<CreateCheckR
         .where(eq(bankAccounts.id, input.accountId));
 
       await tx.insert(auditEvents).values({
+        userId,
         checkId: row.id,
         action: "created",
         detail: `#${checkNumber} → ${input.payeeName} (${input.layout})`,
@@ -457,13 +520,13 @@ export async function createCheck(input: CreateCheckInput): Promise<CreateCheckR
   }
 }
 
-export async function getStats() {
+export async function getStats(userId: number) {
   await ensureSeeded();
   const [accountCount] = await withRetry(() =>
-    db.select({ n: sql<number>`count(*)::int` }).from(bankAccounts),
+    db.select({ n: sql<number>`count(*)::int` }).from(bankAccounts).where(eq(bankAccounts.userId, userId)),
   );
   const [payeeCount] = await withRetry(() =>
-    db.select({ n: sql<number>`count(*)::int` }).from(payees),
+    db.select({ n: sql<number>`count(*)::int` }).from(payees).where(eq(payees.userId, userId)),
   );
   const [totals] = await withRetry(() =>
     db
@@ -473,7 +536,8 @@ export async function getStats() {
       cleared: sql<number>`coalesce(sum(case when status = 'cleared' then amount_cents else 0 end), 0)::int`,
       voided: sql<number>`count(*) filter (where status in ('void','stopped'))::int`,
     })
-    .from(checks),
+    .from(checks)
+    .where(eq(checks.userId, userId)),
   );
   return {
     accounts: accountCount?.n ?? 0,
@@ -486,10 +550,11 @@ export async function getStats() {
 }
 
 export async function logEvent(
+  userId: number | null,
   checkId: number | null,
   action: string,
   detail = "",
   actor = "owner",
 ): Promise<void> {
-  await db.insert(auditEvents).values({ checkId, action, detail, actor });
+  await db.insert(auditEvents).values({ userId, checkId, action, detail, actor });
 }
