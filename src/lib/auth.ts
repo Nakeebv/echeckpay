@@ -115,6 +115,10 @@ export async function createSession(userId: number): Promise<void> {
   });
 }
 
+export function invalidateUserCache(userId: number): void {
+  userCache.delete(userId);
+}
+
 export async function destroySession(): Promise<void> {
   const jar = await cookies();
   jar.delete(SESSION_COOKIE);

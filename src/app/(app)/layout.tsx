@@ -11,6 +11,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   // signature AND account status so a stale/forged session never renders.
   const user = await currentUser();
   if (!user) redirect("/login");
+  // first-login onboarding gate (profile → account type → bank)
+  if (user.role !== "admin" && user.onboarded !== 1) redirect("/onboarding");
 
   const isAdmin = user.role === "admin";
   const lowBalance = user.balanceCents < 1000;
@@ -24,12 +26,19 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           </Link>
 
           <nav className="ml-4 hidden items-center gap-1 md:flex">
-            <Link href="/dashboard" className="nav-link">Dashboard</Link>
-            <Link href="/write" className="nav-link">Write</Link>
-            <Link href="/checks" className="nav-link">History</Link>
-            <Link href="/wallet" className={lowBalance ? "nav-link !text-[#b45309]" : "nav-link"}>Wallet</Link>
-            <Link href="/support" className="nav-link">Support</Link>
-            {isAdmin ? <Link href="/admin" className="nav-link !text-[#0071e3]">Admin</Link> : null}
+            {isAdmin ? (
+              <>
+                <Link href="/admin" className="nav-link !text-[#0071e3]">Admin console</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/dashboard" className="nav-link">Dashboard</Link>
+                <Link href="/write" className="nav-link">Write</Link>
+                <Link href="/checks" className="nav-link">History</Link>
+                <Link href="/wallet" className={lowBalance ? "nav-link !text-[#b45309]" : "nav-link"}>Wallet</Link>
+                <Link href="/support" className="nav-link">Support</Link>
+              </>
+            )}
           </nav>
 
           <div className="ml-auto hidden items-center gap-3 md:flex">

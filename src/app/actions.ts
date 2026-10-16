@@ -3,9 +3,10 @@
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { auditEvents, bankAccounts, users } from "@/db/schema";
 import {
   createSession,
+  invalidateUserCache,
   destroySession,
   hashPassword,
   validatePasswordStrength,
@@ -165,4 +166,70 @@ export async function resetPasswordAction(formData: FormData): Promise<void> {
     .set({ passwordHash: await hashPassword(password) })
     .where(eq(users.id, userId));
   redirect("/login?reset=1");
+}
+
+/* ------------------------------------------------------------------ */
+/* first-login onboarding: profile → company/personal → bank          */
+/* ------------------------------------------------------------------ */
+
+export async function saveOnboardingAction(formData: FormData): Promise<void> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const profileName = String(formData.get("profileName") ?? "").trim();
+  const profileAddress = String(formData.get("profileAddress") ?? "").trim();
+  const profilePhone = String(formData.get("profilePhone") ?? "").trim();
+  const accountType = String(formData.get("accountType") === "personal" ? "personal" : "business");
+  const bankLabel = String(formData.get("bankLabel") ?? "").trim();
+  const bankName = String(formData.get("bankName") ?? "").trim();
+  const routing = String(formData.get("routingNumber") ?? "").replace(/[^0-9]/g, "");
+  const accountNo = String(formData.get("accountNumber") ?? "").replace(/[^0-9]/g, "");
+
+  await ensureSeeded();
+
+  const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  if (!user) redirect("/login");
+
+  if (!profileName || !profileAddress) redirect(`/onboarding?error=profile`);
+  if (!bankLabel || !bankName || routing.length !== 9 || accountNo.length < 4) {
+    redirect(`/onboarding?error=bank&name=${encodeURIComponent(profileName)}&addr=${encodeURIComponent(profileAddress)}&phone=${encodeURIComponent(profilePhone)}&type=${accountType}`);
+  }
+
+  const [acct] = await db
+    .insert(bankAccounts)
+    .values({
+      userId: user.id,
+      label: bankLabel,
+      accountClass: accountType,
+      holderName: profileName,
+      holderAddress: profileAddress,
+      holderPhone: profilePhone,
+      bankName,
+      routingNumber: routing,
+      accountNumber: accountNo,
+      nextCheckNumber: 1001,
+      background: accountType === "personal" ? "per-linen" : "biz-guilloche-navy",
+    })
+    .returning({ id: bankAccounts.id });
+
+  await db
+    .update(users)
+    .set({ displayName: profileName, profileAddress, profilePhone, accountType, onboarded: 1 })
+    .where(eq(users.id, user.id));
+  invalidateUserCache(user.id);
+
+  await db.insert(auditEvents).values({
+    userId: user.id,
+    action: "onboarding-completed",
+    detail: `Profile saved — ${accountType} account "${bankLabel}" added`,
+    actor: user.email,
+  });
+
+  redirect("/dashboard?welcome=1");
+}
+
+export async function skipOnboardingAction(formData: FormData): Promise<void> {
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const [row] = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
+  await db.update(users).set({ onboarded: 1 }).where(eq(users.email, email));
+  invalidateUserCache(row?.id ?? 0);
+  redirect("/dashboard?setup=later");
 }

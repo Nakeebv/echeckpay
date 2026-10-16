@@ -22,6 +22,11 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  displayName: text("display_name").notNull().default(""),
+  profileAddress: text("profile_address").notNull().default(""),
+  profilePhone: text("profile_phone").notNull().default(""),
+  accountType: text("account_type").notNull().default("business"), // business | personal
+  onboarded: integer("onboarded").notNull().default(0),
   role: text("role").notNull().default("user"), // user | admin
   status: text("status").notNull().default("active"), // active | blocked | deleted
   emailVerified: integer("email_verified").notNull().default(0),
