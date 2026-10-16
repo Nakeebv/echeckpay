@@ -57,6 +57,11 @@ export async function ensureSeeded(): Promise<number | null> {
 
 async function runSeed(): Promise<number | null> {
   return withRetry(async () => {
+    // Fast path: any existing user means the database is already bootstrapped.
+    // One cheap query instead of a lock + several counts on every cold isolate.
+    const [existingUser] = await db.select({ id: users.id }).from(users).limit(1);
+    if (existingUser) return existingUser.id;
+
     const adminId = await db.transaction(async (tx) => {
       const lock = await tx.execute(sql`select pg_try_advisory_xact_lock(778811223) as ok`);
       const lockRows = (lock as unknown as { rows?: { ok?: boolean }[] }).rows ?? [];
@@ -292,7 +297,6 @@ export function toAccountView<T extends {
 }
 
 export async function listAccounts(userId: number) {
-  await ensureSeeded();
   return withRetry(() => db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId)).orderBy(bankAccounts.id));
 }
 
@@ -308,7 +312,6 @@ export async function getOwnedAccount(userId: number, accountId: number) {
 }
 
 export async function listPayees(userId: number) {
-  await ensureSeeded();
   return withRetry(() => db.select().from(payees).where(eq(payees.userId, userId)).orderBy(payees.name));
 }
 
@@ -329,7 +332,6 @@ export type RegisterRow = {
 };
 
 export async function listChecks(userId: number, limit = 200, offset = 0): Promise<RegisterRow[]> {
-  await ensureSeeded();
   const rows = await withRetry(() => db
     .select({
       id: checks.id,
@@ -356,7 +358,6 @@ export async function listChecks(userId: number, limit = 200, offset = 0): Promi
 }
 
 export async function countChecks(userId: number): Promise<number> {
-  await ensureSeeded();
   const [row] = await withRetry(() =>
     db.select({ n: sql<number>`count(*)::int` }).from(checks).where(eq(checks.userId, userId)),
   );
@@ -375,7 +376,6 @@ export async function listAuditsForCheck(id: number) {
 
 /** Per-user audit feed. */
 export async function listRecentAudits(userId: number, limit = 12) {
-  await ensureSeeded();
   return withRetry(() =>
     db.select().from(auditEvents).where(eq(auditEvents.userId, userId)).orderBy(desc(auditEvents.id)).limit(limit),
   );

@@ -19,6 +19,7 @@ export type RegisterRowView = {
   accountLabel: string;
   accountNumber: string;
   routingNumber: string;
+  printed: boolean;
 };
 
 const STATUSES = ["all", "draft", "printed", "issued", "cleared", "void", "stopped"];
@@ -285,14 +286,12 @@ export default function RegisterTable({
                   <Link
                     href={`/checks/${r.id}`}
                     className={`rounded border px-2 py-1 text-[11px] font-semibold ${
-                      r.status === "cleared" || r.status === "void" || r.status === "stopped"
+                      r.printed
                         ? "border-amber-300 text-amber-800 hover:bg-amber-50"
                         : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    {r.status === "cleared" || r.status === "void" || r.status === "stopped"
-                      ? "Reprint"
-                      : "Print"}
+                    {r.printed ? "Reprint" : "Print"}
                   </Link>
                 </td>
               </tr>

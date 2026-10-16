@@ -32,6 +32,7 @@ export default async function CheckDetailPage({
     statusReason: string;
     payeeAddress: string;
     accountId: number;
+    printCount: number;
   } = {
     background: check.background,
     id: check.id,
@@ -48,6 +49,7 @@ export default async function CheckDetailPage({
     status: check.status,
     statusReason: check.statusReason,
     accountId: account.id,
+    printCount: check.printCount,
   };
 
   return (

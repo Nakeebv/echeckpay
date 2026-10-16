@@ -34,6 +34,7 @@ export default async function ChecksPage({
     accountLabel: r.accountLabel,
     accountNumber: r.accountNumber,
     routingNumber: r.routingNumber,
+    printed: r.printedAt != null,
   }));
 
   return (

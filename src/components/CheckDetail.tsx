@@ -18,6 +18,7 @@ export type CheckDetailProps = {
     payeeAddress: string;
     accountId: number;
     statusReason: string;
+    printCount: number;
   };
   account: CheckAccountView;
   accountLabel: string;
@@ -75,6 +76,7 @@ export default function CheckDetail({
   );
 
   const nexts = nextStatuses(check.status);
+  const wasPrinted = check.printCount > 0;
 
   async function transition(status: string, statusReason = "") {
     setBusy(true);
@@ -197,6 +199,17 @@ export default function CheckDetail({
             </div>
           </dl>
 
+          {wasPrinted ? (
+            <div className="mt-4 flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+              <span aria-hidden className="text-slate-400">🔒</span>
+              <span>
+                <span className="font-semibold text-slate-700">Locked</span> — this check was already
+                printed{check.printCount > 1 ? ` ${check.printCount} times` : ""}, so it can only be
+                reprinted exactly as-is. It can no longer be edited.
+              </span>
+            </div>
+          ) : null}
+
           <div className="mt-4 flex flex-wrap gap-2">
             <button
               type="button"
@@ -222,7 +235,7 @@ export default function CheckDetail({
               }}
               className="rounded-full bg-[#0071e3] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0077ed] disabled:opacity-50"
             >
-              {printBusy ? "Processing…" : `Print — $10`}
+              {printBusy ? "Processing…" : wasPrinted ? "Reprint (locked) — $10" : `Print — $10`}
             </button>
             {error ? (
               <span className="self-center text-xs font-semibold text-rose-700">{error}</span>

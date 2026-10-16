@@ -153,7 +153,11 @@ export default function WelcomePage() {
         <div className="relative mx-auto mt-14 max-w-4xl">
           <div className="pointer-events-none absolute -inset-x-8 -top-10 bottom-16 bg-gradient-to-b from-[#0071e3]/10 via-transparent to-transparent blur-2xl" />
           <img
-            src="/images/hero-check.png"
+            src="/images/hero-check.webp"
+            width={1280}
+            height={720}
+            fetchPriority="high"
+            decoding="async"
             alt="An eCheckPay check with a true E-13B MICR line, ready to print"
             className="doc-shadow relative mx-auto w-full max-w-3xl rounded-2xl"
           />
@@ -233,7 +237,11 @@ export default function WelcomePage() {
             </div>
           </div>
           <img
-            src="/images/security.png"
+            src="/images/security.webp"
+            width={1248}
+            height={832}
+            loading="lazy"
+            decoding="async"
             alt="Security details printed on every eCheckPay check"
             className="w-full rounded-2xl shadow-2xl"
           />
